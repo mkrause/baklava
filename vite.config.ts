@@ -16,7 +16,7 @@ import { createSvgIconsPlugin } from 'vite-plugin-svg-icons';
 import react from '@vitejs/plugin-react';
 
 
-export default defineConfig({
+export default defineConfig(({ mode, command }) => ({
   root: './app', // Run with `app` as root, so that files like `index.html` are by default referenced from there
   base: './', // Assets base URL
   
@@ -51,10 +51,11 @@ export default defineConfig({
     // Handle SVG sprite icons
     createSvgIconsPlugin({
       iconDirs: [path.resolve(__dirname, 'src/assets/icons')],
-      symbolId: 'baklava-icon-[name]',
+      symbolId: 'baklava-icon-[dir]-[name]',
       inject: 'body-last',
       customDomId: 'baklava-icon-sprite',
     }),
+    
     //libInjectCss(), // Disabled for now (`.css` import causes issues in vitest)
     
     // Generate `.d.ts` files
@@ -98,26 +99,25 @@ export default defineConfig({
   // https://victorlillo.dev/blog/react-typescript-vite-component-library
   build: {
     emptyOutDir: true,
-    /*
-    rollupOptions: {
-      input: {
-        baklava: path.resolve(__dirname, 'app/main.tsx'),
-      },
-    },
-    */
-    
     copyPublicDir: false, // Do not copy `./public` into the output dir
     outDir: path.resolve(__dirname, 'dist'),
     lib: {
-      entry: path.resolve(__dirname, 'app/lib.ts'),
-      name: 'baklava',
-      fileName: 'baklava',
+      entry: [
+        path.resolve(__dirname, 'app/baklava.ts'),
+        path.resolve(__dirname, 'app/legacy.ts'),
+      ],
+      fileName: (_format, entryName) => `${entryName}.ts`,
       //cssFileName: 'baklava',
       formats: ['es'],
     },
     rollupOptions: {
       // Do not include React in the output (rely on the consumer to bring their own version)
-      external: ['react', 'react/jsx-runtime'],
+      external: ['react', 'react/jsx-runtime', 'react-router-dom'],
+      
+      // input: {
+      //   baklava: path.resolve(__dirname, 'app/main.tsx'),
+      // },
+      
       // input: Object.fromEntries(
       //   glob.sync('src/**/*.{ts,tsx}', {
       //     ignore: ['src/**/*.d.ts'],
@@ -135,4 +135,4 @@ export default defineConfig({
       // ),
     },
   },
-});
+}));

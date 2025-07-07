@@ -31,6 +31,10 @@ const packageConfig = {
       //'require': './dist/baklava.cjs',
       'default': './dist/baklava.js',
     },
+    './legacy': {
+      'types': './dist/legacy.d.ts',
+      'default': './dist/legacy.js',
+    },
     // Expose mixins for use in consumer components
     './styling/defs.scss': {
       'default': './src/styling/public/defs.scss',
@@ -74,7 +78,7 @@ const packageConfig = {
     'lint': 'npm run lint:style; npm run lint:script',
     
     // Test
-    // Note: use `vitest run --root=. src/...` to run a single test file
+    // Note: use `vitest run src/...` to run a single test file
     'test:unit': 'vitest run',
     'test': 'npm run check:types && npm run test:unit && npm run lint:style && npm run verify verify:source', // TODO: add `lint:script`
     'test-ui': 'vitest --ui',
@@ -123,9 +127,9 @@ const packageConfig = {
     '@biomejs/biome': '^2.1.2',
     
     // Testing
-    'jsdom': '^26.1.0',
     'vitest': '^3.1.4',
     '@vitest/ui': '^3.1.4',
+    'jsdom': '^26.1.0', // Needed for `@testing-library/react`
     '@testing-library/react': '^16.3.0',
     '@testing-library/user-event': '^14.6.1',
     '@testing-library/jest-dom': '^6.8.0',
@@ -163,6 +167,10 @@ const packageConfig = {
     
     // Data table
     '@types/react-table': '^7.7.20',
+    
+    // Legacy
+    '@types/react-is': '^19.0.0',
+    '@types/react-router-dom': '^5.3.0',
   },
   
   // Dependencies needed when running the generated build
@@ -187,10 +195,24 @@ const packageConfig = {
     '@tanstack/react-virtual': '^3.13.12',
     
     'optics-ts': '^2.4.1',
+    
+    
+    // Legacy packages (for `src/legacy`)
+    'react-is': '^19.1.0',
+    'focus-trap-react': '^10.0.0',
+    'react-textarea-autosize': '^8.3.2',
+    'react-toastify': '^11.0.5',
+    'react-router-dom': '^5.3.0',
+    '@popperjs/core': '^2.9.2',
+    'react-popper': '^2.2.5',
   },
   peerDependencies: {
     'react': '>= 19.0.0',
     'react-dom': '>= 19.0.0',
+    
+    // Legacy peer dependencies
+    'react-router-dom': '>= 5.0.0',
+    'react-toastify': '>= 11.0.0',
   },
   peerDependenciesMeta: {},
   optionalDependencies: {
@@ -201,6 +223,10 @@ const packageConfig = {
   overrides: {
     // TODO: Revisit after updating react-table to v8
     'react-table': {
+      'react': '$react',
+      'react-dom': '$react-dom',
+    },
+    'react-popper': {
       'react': '$react',
       'react-dom': '$react-dom',
     },
