@@ -94,9 +94,9 @@ export const Nav = ({ children, className, ...props }: NavProps) => {
       <ul className="bkl-nav__list" role="menubar">
         {React.Children.map(children, (navItem, index) => {
           if (!navItem || !React.isValidElement(navItem)) return null;
-          const { key, tooltip, disabled } = navItem.props;
+          const { tooltip, disabled } = navItem.props;
           return (
-            <li className="bkl-nav__list-item" role="presentation" key={key}>
+            <li className="bkl-nav__list-item" role="presentation">
               <SidebarTooltip content={tooltip}>
                 <Button
                   plain
