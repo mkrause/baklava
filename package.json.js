@@ -31,10 +31,6 @@ const packageConfig = {
       //'require': './dist/baklava.cjs',
       'default': './dist/baklava.js',
     },
-    './legacy': {
-      'types': './dist/legacy.d.ts',
-      'default': './dist/legacy.js',
-    },
     // Expose mixins for use in consumer components
     './styling/defs.scss': {
       'default': './src/styling/public/defs.scss',
@@ -42,6 +38,15 @@ const packageConfig = {
     // Expose layer ordering, since consumers may want to explicitly emit these first (see note in README.md)
     './styling/layers.scss': {
       'default': './src/styling/public/layers.scss',
+    },
+    
+    // Legacy exports
+    './legacy': {
+      'types': './dist/legacy.d.ts',
+      'default': './dist/legacy.js',
+    },
+    './legacy/styling/defs.scss': {
+      'default': './src/legacy/style/defs.scss',
     },
   },
   

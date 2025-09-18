@@ -27,15 +27,18 @@
       "types": "./dist/baklava.d.ts",
       "default": "./dist/baklava.js"
     },
-    "./legacy": {
-      "types": "./dist/legacy.d.ts",
-      "default": "./dist/legacy.js"
-    },
     "./styling/defs.scss": {
       "default": "./src/styling/public/defs.scss"
     },
     "./styling/layers.scss": {
       "default": "./src/styling/public/layers.scss"
+    },
+    "./legacy": {
+      "types": "./dist/legacy.d.ts",
+      "default": "./dist/legacy.js"
+    },
+    "./legacy/styling/defs.scss": {
+      "default": "./src/legacy/style/defs.scss"
     }
   },
   "scripts": {
