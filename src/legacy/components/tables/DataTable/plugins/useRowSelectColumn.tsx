@@ -4,7 +4,7 @@
 
 import * as React from 'react';
 import * as ReactTable from 'react-table';
-import { Checkbox } from '../../../forms/checkbox/Checkbox';
+import { Checkbox } from '../../../forms/Checkbox/Checkbox.tsx';
 
 import './useRowSelectColumn.scss';
 
