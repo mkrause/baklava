@@ -25,7 +25,7 @@ jobs:
         run: |
           # Note: npm expects a top-level folder, we cannot have the files immediately as items in the `tar.gz`
           mkdir -p package
-          cp -r dist/ src/ app/ package.json README.md LICENSE
+          cp -r dist/ src/ app/ package.json README.md LICENSE package/
           tar -czf package.tar.gz package/
         
       - name: Upload build files to release
