@@ -4,8 +4,9 @@ on:
     types: [published]
 
 jobs:
-  build-and-upload:
+  upload-release-build:
     runs-on: ubuntu-latest
+    if: contains(github.event.release.tag_name, 'legacy')
     steps:
       - uses: actions/checkout@v4
       
