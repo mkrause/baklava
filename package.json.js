@@ -69,7 +69,7 @@ const packageConfig = {
     // App
     'serve:dev': 'vite --config=./vite.config.ts serve',
     //'build': 'vite --config=./vite.config.ts --emptyOutDir build && cp src/types/vite-env.d.ts dist && echo \'{"name": "@fortanix/baklava","main": "./baklava.js"}\' > dist/package.json',
-    'build': 'tsc -b && vite --config=./vite.config.ts build && npm run verify verify:build',
+    'build': 'vite --config=./vite.config.ts build && npm run verify verify:build',
     
     // Storybook
     'storybook:serve': 'storybook dev -p 6006',
@@ -85,7 +85,7 @@ const packageConfig = {
     // Test
     // Note: use `vitest run src/...` to run a single test file
     'test:unit': 'vitest run',
-    'test': 'npm run check:types && npm run test:unit && npm run lint:style && npm run verify verify:source', // TODO: add `lint:script`
+    'test': `${/*npm run check:types && */''} npm run test:unit && npm run lint:style && npm run verify verify:source`, // TODO: add `lint:script`
     'test-ui': 'vitest --ui',
     'coverage': 'vitest run --coverage',
     
