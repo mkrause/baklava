@@ -6,13 +6,17 @@ import * as React from 'react';
 import { classNames as cx, type ComponentProps } from '../../util/componentUtil.ts';
 
 import { H3 } from '../../typography/Heading/Heading.tsx';
-import { Panel } from '../../components/containers/Panel/Panel.tsx';
+import { Panel, type PanelProps } from '../../components/containers/Panel/Panel.tsx';
 
 import cl from './PageLayout.module.scss';
 
 
 const PageLayoutHeading = (props: React.ComponentProps<'span'>) => (
   <H3 className={cx(cl['bk-page-layout__header__heading'], props.className)}>{props.children}</H3>
+);
+
+const PageBody = (props: PanelProps) => (
+  <Panel {...props} className={cx(cl['bk-page-layout__body'], props.className)} />
 );
 
 const PageLayoutNav = (props: React.ComponentProps<'div'>) => (
@@ -75,7 +79,7 @@ export const PageLayout = Object.assign(
     );
   },
   {
-    Body: Panel,
+    Body: PageBody,
     Header: PageHeader,
     Heading: PageLayoutHeading,
     Nav: PageLayoutNav,

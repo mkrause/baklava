@@ -42,6 +42,12 @@
         @include typography.h6;
       }
     }
+    
+    // To show all dropdown options from old baklava dropdown component.
+    // This can be removed after all dropdowns are migrated to baklava v1.
+    .bk-page-layout__body {
+      overflow: visible;
+    }
   }
 }
 
