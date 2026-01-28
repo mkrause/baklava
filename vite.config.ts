@@ -43,10 +43,11 @@ export default defineConfig({
     // Handle SVG sprite icons
     createSvgIconsPlugin({
       iconDirs: [path.resolve(__dirname, 'src/assets/icons')],
-      symbolId: 'baklava-icon-[name]',
+      symbolId: 'baklava-icon-[dir]-[name]',
       inject: 'body-last',
       customDomId: 'baklava-icon-sprite',
     }),
+    
     //libInjectCss(), // Disabled for now (`.css` import causes issues in vitest)
 
     // Generate `.d.ts` files
@@ -95,18 +96,22 @@ export default defineConfig({
       },
     },
     */
-
+    
     copyPublicDir: false, // Do not copy `./public` into the output dir
     outDir: path.resolve(__dirname, 'dist'),
     lib: {
-      entry: path.resolve(__dirname, 'app/baklava.ts'),
+      entry: [
+        path.resolve(__dirname, 'app/baklava.ts'),
+        path.resolve(__dirname, 'app/legacy.ts'),
+      ],
       fileName: (_format, entryName) => `${entryName}.js`,
       //cssFileName: 'baklava',
       formats: ['es'],
     },
     rollupOptions: {
       // Do not include React in the output (rely on the consumer to bring their own version)
-      external: ['react', 'react/jsx-runtime'],
+      external: ['react', 'react/jsx-runtime', 'react-router-dom'],
+      
       // input: Object.fromEntries(
       //   glob.sync('src/**/*.{ts,tsx}', {
       //     ignore: ['src/**/*.d.ts'],
