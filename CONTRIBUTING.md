@@ -93,3 +93,72 @@ Error: Cannot find module @rollup/rollup-linux-x64-gnu. npm has a bug related to
 ```
 
 - A: This happens when your local machine uses a different OS (e.g. Mac). One workaround you can find online is to add said dependency to `optionalDependencies`. This fixes that particular problem, but you will just continue to get the same errors for other dependencies. Instead, do as the error message suggests and completely remove `node_modules` and `package-lock.json` and re-install. This should fix the errors.
+
+
+
+## Legacy
+
+[This repo](https://github.com/mkrause/baklava) contains a fork of [Baklava](https://github.com/fortanix/baklava) that
+includes additional "legacy" components under `src/legacy`. These legacy components are exported through a separate
+path `@fortanix/baklava/legacy` (see the exports under `package.json`).
+
+*NOTE:* use the branch `baklava-v1-legacy` on the fork. Keep the `master` branch in sync with upstream `master`.
+
+This repo is not published to npm. If you need to import this library, use the build packages generated as part of the
+[GitHub releases](https://github.com/mkrause/baklava/releases):
+
+```js
+// package.json
+'@fortanix/baklava': 'https://github.com/mkrause/baklava/releases/download/v1.0.0-legacy-<version>/package.tar.gz',
+```
+
+
+## Setup local working directory
+
+When you have a new working copy, perform the following one-time setup:
+
+- In your local repo, make sure you have one remote set up for upstream (`origin`) and one for the fork (`legacy`).
+
+```shell
+git remote add legacy git@github.com:mkrause/baklava.git
+```
+
+- Check out the `master` branch from `legacy` as a new local `legacy-master` branch:
+
+```shell
+git checkout -b legacy-master legacy/master
+```
+
+
+### Syncing with upstream
+
+When there is a change upstream (on `origin/master`), you can sync the changes as follows:
+
+1. From the GitHub UI, sync the fork through the "Sync fork" menu on the main page of the repo. This will update
+   `legacy-master` to match `origin/master`.
+2. Merge `legacy-master` into `baklava-v1-legacy`:
+
+```shell
+git checkout baklava-v1-legacy
+git merge legacy-master
+git push
+```
+
+
+## Making changes to legacy code
+
+If you're making a change to the legacy code (e.g. `src/legacy`), create a PR that targets `baklava-v1-legacy`.
+
+
+## Publishing a new release
+
+- Update `package.json.js` with a new version of the form `v1.0.0-legacy-<date>`.
+- Run `npm run install-project` to regenerate `package.json` and install the dependencies.
+- Create a [new GitHub release](https://github.com/mkrause/baklava/releases), with the following parameters:
+  - Target branch: `baklava-v1-legacy`
+  - Tag: create new tag, name format: `v1.0.0-legacy-<date>`
+  - Pre-release branch: yes
+
+Or, use the following URL, replacing `[tag]` with the appropriate tag (format: `v1.0.0-legacy-<date>`):
+
+https://github.com/mkrause/baklava/releases/new?target=baklava-v1-legacy&prerelease=1&tag=v[tag]&title=Release%20v[tag]

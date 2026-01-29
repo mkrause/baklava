@@ -165,4 +165,9 @@ declare module 'react-table' {
       UseGroupByRowProps<D>,
       UseRowSelectRowProps<D>,
       UseRowStateRowProps<D> {}
+  
+  // LEGACY
+  export interface TableHeaderProps {
+    onClick: (event: React.MouseEvent) => void,
+  }
 }
