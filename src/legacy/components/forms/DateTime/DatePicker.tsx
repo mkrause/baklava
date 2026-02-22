@@ -8,7 +8,6 @@ import { classNames as cx, type ComponentProps } from '../../../util/component_u
 import { BaklavaIcon } from '../../icons/icon-pack-baklava/BaklavaIcon.tsx';
 
 import ReactDatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 
 import '../Input/Input.scss';
 import './DateTimePicker.scss';
