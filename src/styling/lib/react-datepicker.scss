@@ -78,6 +78,7 @@
     font-style: normal;
     font-weight: bk.$font-weight-semibold;
     text-transform: uppercase;
+    line-height: bk.rem-from-px(25);
   }
 
   :global(.react-datepicker__navigation) {

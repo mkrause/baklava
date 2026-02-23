@@ -2,6 +2,7 @@
 |* This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of
 |* the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 @use '../../../style/variables.scss' as bkl;
+@use '../../../../styling/defs.scss' as bk;
 @use '../../../style/mixins.scss' as mixins;
 @use '../../../style/accessibility.scss' as accessibility;
 
@@ -16,11 +17,13 @@
           position: relative;
           display: flex;
           justify-content: center;
-          padding: bkl.$sizing-3 bkl.$sizing-l bkl.$sizing-3 bkl.$sizing-3;
+          padding: bk.$spacing-3;
           @include accessibility.focus-inset;
           
           .bkl-select__caret {
-            inset-inline-end: bkl.$sizing-1 + bkl.$sizing-2;
+            margin-inline-start: bk.$spacing-3;
+            align-self: center;
+            margin-block-end: bk.$spacing-1;
           }
         }
         

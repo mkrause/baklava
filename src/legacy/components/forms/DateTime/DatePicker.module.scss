@@ -3,6 +3,7 @@
 |* the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 @use '../../../style/util/z-index.scss' as z;
+@use '../../../../styling/defs.scss' as bk;
 @use '../../../../styling/lib/react-datepicker.scss';
 
 @layer baklava.legacy {
@@ -22,12 +23,10 @@
     
     .bkl-date-picker__calendar-icon {
       position: absolute;
-      inset-inline-start: 0.1rem;
-      inset-block-start: 0.4rem;
       z-index: 1;
-      margin: 0.7rem;
-      inline-size: 0.9rem;
-      color: var(--bkl-calendar-icon-color);
+      margin-inline-start: bk.$spacing-3;
+      font-size: bk.$font-size-xs;
+      color: var(--bkl-calendar-color);
     }
   }
 }
