@@ -12,11 +12,8 @@
   .bkl-date-time-picker {
     display: flex;
     flex-direction: row;
+    gap: 0.4rem;
     text-align: center;
-    
-    > * {
-      margin-inline-end: 0.4rem;
-    }
     
     .bkl-date-time-picker__time {
       inline-size: 5.7rem;
@@ -27,9 +24,7 @@
     .bkl-date-time-picker__meridiem {
       inline-size: 5rem;
       text-align: center;
-      font-size: 1rem;
       @include mixins.font($family: bkl.$font-family-body, $weight: bkl.$font-weight-regular);
-      display: block;
     }
   }
 }
