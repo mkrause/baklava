@@ -122,9 +122,12 @@ export const ComboBoxLazy = (props: ComboBoxLazyProps) => {
   const {
     unstyled = false,
     label,
+    value,
     Input = InputDefault,
     selected,
     onSelect,
+    onChange,
+    onBlur,
     dropdownProps,
     ...propsRest
   } = props;
@@ -132,18 +135,18 @@ export const ComboBoxLazy = (props: ComboBoxLazyProps) => {
   const [inputValue, setInputValue] = React.useState(() => {
     return selected
       ? dropdownProps.formatItemLabel?.(selected) ?? ''
-      : propsRest.value ?? '';
+      : value ?? '';
   });
   
   React.useEffect(
     () => {
-      if (typeof propsRest.value === 'undefined' && selected) {
+      if (typeof value === 'undefined' && selected) {
         // Update Input value state on selection change when menu
         // selection is controlled input value is uncontrolled
         setInputValue(dropdownProps.formatItemLabel?.(selected) ?? '');
       }
     },
-    [propsRest.value, selected, dropdownProps.formatItemLabel],
+    [value, selected, dropdownProps.formatItemLabel],
   );
 
   const selectedSet = React.useMemo(() => selectionStateFromItemKey(selected), [selected]);
@@ -160,23 +163,37 @@ export const ComboBoxLazy = (props: ComboBoxLazyProps) => {
   const handleSelect = React.useCallback((_key: null | ItemKey, itemDetails: null | ItemDetails) => {
     const itemKey = itemDetails?.itemKey ?? null;
     onSelect?.(itemKey, itemDetails);
-    setInputValue(itemDetails?.label ?? '');
-    handleInternalSelect(itemKey ? new Set([itemKey]) : new Set());
+
+    if (typeof value === 'undefined') {
+      setInputValue(itemDetails?.label ?? '');
+    }
+
+    if (typeof selected === 'undefined') {
+      handleInternalSelect(itemKey ? new Set([itemKey]) : new Set());
+    }
   }, [onSelect, handleInternalSelect]);
 
   const handleInputChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
-    const value = evt.target.value;
-    setInputValue(value);
+    const newValue = evt.target.value;
+
+    if (typeof selected === 'undefined' && newValue === '') {
+      handleSelect(null, null);
+    }
+
+    if (typeof value === 'undefined') {
+      setInputValue(newValue);
+    }
+
+    onChange?.(evt);
   };
 
   const handleInputFocusOut = (evt: React.FocusEvent<HTMLInputElement>) => {
-    const value = evt.target.value;
-
-    if (value === '') {
-      handleSelect(null, null);
-    } else {
-      setInputValue(internalSelected.values().next().value?.label ?? '');
+    if (typeof value === 'undefined') {
+      const selectedValue = internalSelected.values().next().value?.label ?? '';
+      setInputValue(selectedValue);
     }
+
+    onBlur?.(evt);
   };
   
   return (
@@ -195,7 +212,7 @@ export const ComboBoxLazy = (props: ComboBoxLazyProps) => {
         <ComboBoxInput
           anchorRenderArgs={anchorRenderArgs}
           Input={Input}
-          value={inputValue}
+          value={typeof value !== 'undefined' ? value : inputValue}
           onChange={handleInputChange}
           onBlur={handleInputFocusOut}
           {...propsRest}

@@ -170,6 +170,7 @@ export const MenuLazyProvider = (props: MenuLazyProviderProps) => {
     getReferenceProps,
     refs,
     onKeyDown: onAnchorKeyDown,
+    onBlur: () => {},
     getRenderArgs,
   });
 

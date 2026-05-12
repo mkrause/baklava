@@ -200,6 +200,167 @@ const useFocusInteractive = (context: FloatingContext, options: UseFocusInteract
   };
 };
 
+const useComboboxInteraction = (
+  context: FloatingContext,
+  options: UseFocusInteractiveOptions = {}
+): ElementProps => {
+  const enabled = options.enabled ?? true;
+
+  const anchorEl = context.elements.reference;
+  const popoverEl = context.elements.floating;
+
+  // Focus should NOT open menu anymore
+  const handleReferenceFocus = React.useCallback(() => {
+    if (!enabled) return;
+    // no-op
+  }, [enabled]);
+
+  // Click → open menu
+  const handleReferenceClick = React.useCallback(
+    (event: React.MouseEvent) => {
+      if (!enabled) return;
+      context.onOpenChange(true, event.nativeEvent, 'click');
+    },
+    [enabled, context.onOpenChange]
+  );
+
+  // Arrow keys → open menu
+  const handleReferenceKeyDown = React.useCallback(
+    (event: React.KeyboardEvent) => {
+      if (!enabled) return;
+
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        context.onOpenChange(true, event.nativeEvent, 'list-navigation');
+      }
+    },
+    [enabled, context.onOpenChange]
+  );
+
+  // On change event -> open menu
+  const handleReferenceChange = React.useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (!enabled) return;
+
+      context.onOpenChange(true, event.nativeEvent, 'input');
+    },
+    [enabled, context.onOpenChange]
+  );
+
+  const handleReferenceBlur = React.useCallback(
+    (event: React.FocusEvent) => {
+      if (!enabled) return;
+
+      const anchorEl = event.currentTarget;
+
+      const isInside =
+        event.relatedTarget instanceof Node &&
+        ((popoverEl && popoverEl.isConnected && popoverEl.contains(event.relatedTarget)) ||
+          anchorEl.contains(event.relatedTarget));
+
+      if (!isInside) {
+        context.onOpenChange(false, event.nativeEvent, 'focus-out');
+      } else {
+        event.preventDefault();
+      }
+    },
+    [enabled, popoverEl, context.onOpenChange]
+  );
+
+  const handleFloatingBlur = React.useCallback(
+    (event: React.FocusEvent) => {
+      if (!enabled) return;
+
+      const popoverEl = event.currentTarget;
+
+      const isInside =
+        event.relatedTarget instanceof Node &&
+        ((anchorEl instanceof Node && anchorEl.contains(event.relatedTarget)) ||
+          popoverEl.contains(event.relatedTarget));
+
+      if (!isInside) {
+        window.setTimeout(() => {
+          if (!popoverEl.isConnected) return;
+
+          const isInside =
+            document.activeElement instanceof Node &&
+            ((anchorEl instanceof Node && anchorEl.contains(document.activeElement)) ||
+              popoverEl.contains(document.activeElement));
+
+          if (!isInside) {
+            context.onOpenChange(false, event.nativeEvent, 'focus-out');
+          }
+        }, 0);
+      }
+    },
+    [enabled, anchorEl, context.onOpenChange]
+  );
+
+  // Handle click outside (unchanged)
+  React.useEffect(() => {
+    if (!enabled) return;
+
+    const controller = new AbortController();
+
+    document.addEventListener(
+      'pointerdown',
+      (event) => {
+        if (!anchorEl || !(anchorEl instanceof Node)) return;
+
+        const isInside =
+          event.target instanceof Node &&
+          (anchorEl.contains(event.target) || popoverEl?.contains(event.target));
+
+        if (!isInside) {
+          window.setTimeout(() => {
+            const isInside =
+              document.activeElement instanceof Node &&
+              (anchorEl.contains(document.activeElement) ||
+                popoverEl?.contains(document.activeElement));
+
+            if (!isInside) {
+              context.onOpenChange(false, event, 'outside-press');
+            }
+          }, 0);
+        }
+      },
+      { signal: controller.signal }
+    );
+
+    return () => {
+      controller.abort();
+    };
+  }, [enabled, anchorEl, popoverEl, context.onOpenChange]);
+
+  // Props
+  const referenceProps = React.useMemo<React.HTMLProps<Element>>(
+    () => ({
+      onFocus: handleReferenceFocus,
+      onBlur: handleReferenceBlur,
+      onClick: handleReferenceClick,
+      onKeyDown: handleReferenceKeyDown,
+      onChange: handleReferenceChange,
+    }),
+    [
+      handleReferenceFocus,
+      handleReferenceBlur,
+      handleReferenceClick,
+      handleReferenceKeyDown,
+      handleReferenceChange,
+    ]
+  );
+
+  const floatingProps = React.useMemo<React.HTMLProps<HTMLElement>>(
+    () => ({
+      onBlur: handleFloatingBlur,
+    }),
+    [handleFloatingBlur]
+  );
+
+  return {
+    reference: referenceProps,
+    floating: floatingProps,
+  };
+};
 
 export type UseFloatingElementOptions = {
   /** The popover type for the floating element. Default: `'manual'`. */
@@ -406,7 +567,8 @@ export const useFloatingElement = <E extends HTMLElement>(
   
   // Trigger action: focus-interactive
   const focusInteractiveInteractions = [
-    useFocusInteractive(context, { enabled: opts.triggerAction === 'focus-interactive' }),
+    // useFocusInteractive(context, { enabled: opts.triggerAction === 'focus-interactive' }),
+    useComboboxInteraction(context, { enabled: opts.triggerAction === 'focus-interactive' }),
   ];
   
   // Trigger action: hover
