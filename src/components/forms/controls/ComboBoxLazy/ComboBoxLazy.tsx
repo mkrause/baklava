@@ -5,6 +5,10 @@
 import * as React from 'react';
 import { classNames as cx, type ComponentProps } from '../../../../util/componentUtil.ts';
 
+// Utils
+import { mergeRefs } from '../../../../util/reactUtil.ts';
+
+// Components
 import { Input as InputDefault } from '../Input/Input.tsx';
 import {
   AnchorRenderArgs,
@@ -15,8 +19,9 @@ import {
   MenuLazyProviderProps,
 } from '../../../overlays/MenuLazyProvider/MenuLazyProvider.tsx';
 import { useComboBoxState } from '../ComboBoxMulti/ComboBoxMulti.tsx';
-import { selectionStateFromItemKey } from '../../../overlays/MenuMultiProvider/MenuMultiProvider.tsx';
+import { MenuProviderRef, selectionStateFromItemKey } from '../../../overlays/MenuMultiProvider/MenuMultiProvider.tsx';
 
+// Styles
 import cl from './ComboBoxLazy.module.scss';
 
 
@@ -132,21 +137,33 @@ export const ComboBoxLazy = (props: ComboBoxLazyProps) => {
     ...propsRest
   } = props;
 
+  const { formatItemLabel, ref } = dropdownProps;
+
+  const dropdownRef = React.useRef<MenuProviderRef | null>(null);
+  const mergedDropdownRef = mergeRefs(ref, dropdownRef);
+
   const [inputValue, setInputValue] = React.useState(() => {
     return selected
-      ? dropdownProps.formatItemLabel?.(selected) ?? ''
+      ? formatItemLabel?.(selected) ?? ''
       : value ?? '';
   });
+
+  const updateInputValue = React.useCallback((updatedValue: string) => {
+    if (typeof value === 'undefined') {
+      // Update only when input value is uncontrolled
+      setInputValue(updatedValue);
+    }
+  }, [value]);
   
   React.useEffect(
     () => {
-      if (typeof value === 'undefined' && selected) {
+      if (selected) {
         // Update Input value state on selection change when menu
         // selection is controlled input value is uncontrolled
-        setInputValue(dropdownProps.formatItemLabel?.(selected) ?? '');
+        updateInputValue(formatItemLabel?.(selected) ?? '');
       }
     },
-    [value, selected, dropdownProps.formatItemLabel],
+    [selected, formatItemLabel, updateInputValue],
   );
 
   const selectedSet = React.useMemo(() => selectionStateFromItemKey(selected), [selected]);
@@ -155,23 +172,24 @@ export const ComboBoxLazy = (props: ComboBoxLazyProps) => {
     handleInternalSelect,
   } = useComboBoxState({
     selected: selectedSet,
-    formatItemLabel: dropdownProps.formatItemLabel,
+    formatItemLabel,
   });
+
+  const updateInternalSelected = React.useCallback((updatedInternalSelected: Set<ItemKey>) => {
+    if (typeof selected === 'undefined') {
+      // Update only when menu selection is uncontrolled
+      handleInternalSelect(updatedInternalSelected);
+    }
+  }, [selected, handleInternalSelect]);
 
   const internalSelectedItemKey: null | ItemKey = internalSelected.keys().next().value ?? null;
 
   const handleSelect = React.useCallback((_key: null | ItemKey, itemDetails: null | ItemDetails) => {
     const itemKey = itemDetails?.itemKey ?? null;
+    updateInputValue(itemDetails?.label ?? '');
+    updateInternalSelected(itemKey ? new Set([itemKey]) : new Set());
     onSelect?.(itemKey, itemDetails);
-
-    if (typeof value === 'undefined') {
-      setInputValue(itemDetails?.label ?? '');
-    }
-
-    if (typeof selected === 'undefined') {
-      handleInternalSelect(itemKey ? new Set([itemKey]) : new Set());
-    }
-  }, [onSelect, handleInternalSelect]);
+  }, [onSelect, updateInputValue, updateInternalSelected]);
 
   const handleInputChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = evt.target.value;
@@ -180,19 +198,14 @@ export const ComboBoxLazy = (props: ComboBoxLazyProps) => {
       handleSelect(null, null);
     }
 
-    if (typeof value === 'undefined') {
-      setInputValue(newValue);
-    }
-
+    updateInputValue(newValue);
     onChange?.(evt);
   };
 
   const handleInputFocusOut = (evt: React.FocusEvent<HTMLInputElement>) => {
-    if (typeof value === 'undefined') {
-      const selectedValue = internalSelected.values().next().value?.label ?? '';
-      setInputValue(selectedValue);
-    }
-
+    const floatingEl = dropdownRef.current?.floatingEl;
+    if (floatingEl?.contains(evt.relatedTarget as Node)) { return; }
+    updateInputValue(internalSelected.values().next().value?.label ?? '');
     onBlur?.(evt);
   };
   
@@ -200,13 +213,14 @@ export const ComboBoxLazy = (props: ComboBoxLazyProps) => {
     <MenuLazyProvider
       label={label}
       role="combobox"
-      triggerAction="focus-interactive" // Keep the dropdown menu open while the input is focused
+      triggerAction="combobox" // Keep the dropdown menu open while the input is focused
       keyboardInteractions="default" // FIXME
       placement="bottom-start"
       offset={1}
       selected={internalSelectedItemKey}
       onSelect={handleSelect}
       {...dropdownProps}
+      ref={mergedDropdownRef}
     >
       {anchorRenderArgs => (
         <ComboBoxInput

@@ -166,7 +166,6 @@ type UseMenuAnchorProps<RenderArgs> = {
   getReferenceProps: UseFloatingElementResult['getReferenceProps'],
   refs: UseFloatingElementResult['refs'],
   onKeyDown: (e: React.KeyboardEvent) => void,
-  onBlur: (e: React.FocusEvent) => void,
   getRenderArgs: (args: BaseAnchorRenderArgs) => RenderArgs,
 };
 export const useMenuAnchor = <RenderArgs extends BaseAnchorRenderArgs>(props: UseMenuAnchorProps<RenderArgs>) => {
@@ -178,7 +177,6 @@ export const useMenuAnchor = <RenderArgs extends BaseAnchorRenderArgs>(props: Us
     getReferenceProps,
     refs,
     onKeyDown,
-    onBlur,
     getRenderArgs,
   } = props;
 
@@ -208,8 +206,7 @@ export const useMenuAnchor = <RenderArgs extends BaseAnchorRenderArgs>(props: Us
         'aria-expanded': isOpen,
         // biome-ignore lint/suspicious/noExplicitAny: `onKeyDown` should be a function here
         onKeyDown: mergeCallbacks([props.onKeyDown as any, onKeyDown]),
-        // biome-ignore lint/suspicious/noExplicitAny: `onBlur` should be a function here
-        onBlur: mergeCallbacks([props.onBlur as any, onBlur]),
+        onBlur: props.onBlur,
       };
     };
 
@@ -381,7 +378,7 @@ export const useMenuSelect = (options: UseMenuSelectHandlerOptions) => {
       if (triggerAction !== 'focus') {
         setIsOpen(false);
       }
-    }, 150);
+    }, 100);
   }, [
     triggerAction,
     setIsOpen,
@@ -614,7 +611,6 @@ export const MenuMultiProvider = Object.assign((props: MenuMultiProviderProps) =
     listBoxRef,
     refs.setFloating,
     floatingProps.ref as React.Ref<React.ComponentRef<typeof ListBoxMulti.ListBoxMulti>>,
-    ref,
   );
 
   const selectedFromInternalSelected = React.useMemo(() => {
