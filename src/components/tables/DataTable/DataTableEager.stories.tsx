@@ -4,6 +4,7 @@
 
 import { differenceInDays } from 'date-fns';
 import * as React from 'react';
+import type * as ReactTable from 'react-table';
 
 import type { StoryObj } from '@storybook/react-vite';
 import { LoremIpsum } from '../../../util/storybook/LoremIpsum.tsx';
@@ -16,17 +17,18 @@ import * as Filtering from './filtering/Filtering.ts';
 import type { Fields, FilterQuery } from '../MultiSearch/filterQuery.ts';
 
 import { Button } from '../../actions/Button/Button.tsx';
+import { IconButton } from '../../actions/IconButton/IconButton.tsx';
 import { DialogModal } from '../../overlays/DialogModal/DialogModal.tsx';
 import { PageLayout } from '../../../layouts/PageLayout/PageLayout.tsx';
 import { Panel } from '../../containers/Panel/Panel.tsx';
 import * as MultiSearch from '../MultiSearch/MultiSearch.tsx';
 import * as DataTablePlugins from './plugins/useRowSelectColumn.tsx';
 import * as DataTableEager from './DataTableEager.tsx';
+import { DialogOverlay } from '../../overlays/DialogOverlay/DialogOverlay.tsx';
 
 import './DataTableEager_stories.scss';
 
-
-const columns = [
+const columns: Array<ReactTable.Column<User>> = [
   {
     id: 'name',
     accessor: (user: User) => user.name,
@@ -66,7 +68,7 @@ const columns = [
   {
     id: 'comments',
     // Simulate a mix of small height and long height cells
-    accessor: (_user: User, index: number) => index % 2 === 0 ? <LoremIpsum short/> : null,
+    accessor: (_user: User, index: number) => index % 2 === 0 ? <LoremIpsum short /> : null,
     Header: 'Comments',
     disableSortBy: true,
     disableGlobalFilter: true,
@@ -144,18 +146,18 @@ const DataTableEagerWithFilterTemplate = (props: DataTableEagerTemplateProps) =>
   const memoizedColumns = React.useMemo(() => props.columns, [props.columns]);
 
   const [filters, setFilters] = React.useState<FilterQuery>([]);
-  const [filteredItems, setFilteredItems] = React.useState<User[]>(props.items as User[]);
+  const [filteredItems, setFilteredItems] = React.useState<Array<User>>(props.items as Array<User>);
 
   // Convert items array into a record
   const itemsAsRecord = React.useMemo(() => {
     return Object.fromEntries(props.items.map(item => [item.id, item])) as Record<string, User>;
   }, [props.items]);
-  
+
   React.useEffect(() => {
     const filtered = Filtering.filterByQuery(fields, itemsAsRecord, filters);
     setFilteredItems(Object.values(filtered) as User[]);
   }, [filters, itemsAsRecord]);
-  
+
   const query = React.useCallback((filters: FilterQuery) => { setFilters(filters); }, []);
 
   return (
@@ -166,7 +168,7 @@ const DataTableEagerWithFilterTemplate = (props: DataTableEagerTemplateProps) =>
       getRowId={(item: User) => item.id}
       plugins={[DataTablePlugins.useRowSelectColumn]}
     >
-      <MultiSearch.MultiSearch query={query} fields={fields} filters={filters}/>
+      <MultiSearch.MultiSearch query={query} fields={fields} filters={filters} />
       <DataTableEager.DataTableEager />
     </DataTableEager.TableProviderEager>
   );
@@ -187,7 +189,7 @@ export const Empty: Story = {
     items: generateData({ numItems: 0 }),
   },
   render: (args: DataTableEagerTemplateProps) => <DataTableEagerTemplate {...args} />,
-  decorators: [Story => <Panel><Story/></Panel>],
+  decorators: [Story => <Panel><Story /></Panel>],
 };
 
 export const SinglePage: Story = {
@@ -196,7 +198,7 @@ export const SinglePage: Story = {
     items: generateData({ numItems: 5 }),
   },
   render: (args: DataTableEagerTemplateProps) => <DataTableEagerTemplate {...args} />,
-  decorators: [Story => <Panel><Story/></Panel>],
+  decorators: [Story => <Panel><Story /></Panel>],
 };
 
 export const MultiplePagesSmall: Story = {
@@ -205,7 +207,7 @@ export const MultiplePagesSmall: Story = {
     items: generateData({ numItems: 45 }),
   },
   render: (args: DataTableEagerTemplateProps) => <DataTableEagerTemplate {...args} />,
-  decorators: [Story => <Panel><Story/></Panel>],
+  decorators: [Story => <Panel><Story /></Panel>],
 };
 
 export const MultiplePagesLarge: Story = {
@@ -214,7 +216,7 @@ export const MultiplePagesLarge: Story = {
     items: generateData({ numItems: 1000 }),
   },
   render: (args: DataTableEagerTemplateProps) => <DataTableEagerTemplate {...args} />,
-  decorators: [Story => <Panel><Story/></Panel>],
+  decorators: [Story => <Panel><Story /></Panel>],
 };
 
 export const AsyncInitialization: Story = {
@@ -225,7 +227,7 @@ export const AsyncInitialization: Story = {
     isReady: false,
   },
   render: (args: DataTableEagerTemplateProps) => <DataTableEagerTemplate {...args} />,
-  decorators: [Story => <Panel><Story/></Panel>],
+  decorators: [Story => <Panel><Story /></Panel>],
 };
 
 export const WithFilter: Story = {
@@ -234,7 +236,113 @@ export const WithFilter: Story = {
     items: generateData({ numItems: 45 }),
   },
   render: (args: DataTableEagerTemplateProps) => <DataTableEagerWithFilterTemplate {...args} />,
-  decorators: [Story => <Panel><Story/></Panel>],
+  decorators: [Story => <Panel><Story /></Panel>],
+};
+
+export const WithExpandableRows: Story = {
+  args: {
+    columns,
+    items: generateData({ numItems: 12 }),
+  },
+  render: (args: DataTableEagerTemplateProps) => {
+    return (
+      <DataTableEager.TableProviderEager
+        columns={columns}
+        items={args.items}
+        getRowId={(item: User) => item.id}
+        plugins={[DataTablePlugins.useRowSelectColumn]}
+      >
+        <DataTableEager.Search />
+        <DataTableEager.DataTableEager
+          expandableRow={{
+            render: (row: ReactTable.Row<User>) => {
+              return (
+                <div>
+                  <p><strong>{row.original.name}</strong></p>
+                  <p>{row.original.email}</p>
+                  <p>{row.original.company}</p>
+                </div>
+              );
+            },
+          }}
+        />
+      </DataTableEager.TableProviderEager>
+    );
+  },
+  decorators: [Story => <Panel><Story /></Panel>],
+};
+
+const ExpandableUserDetails = (props: { row: ReactTable.Row<User> }) => {
+  const { row } = props;
+
+  return (
+    <div>
+      <p><strong>{row.original.name}</strong></p>
+      <p>{row.original.email}</p>
+      <p>{row.original.company}</p>
+    </div>
+  );
+};
+
+export const WithExpandableRowsMultiple: Story = {
+  args: {
+    columns,
+    items: generateData({ numItems: 12 }),
+  },
+  render: (args: DataTableEagerTemplateProps) => {
+    return (
+      <DataTableEager.TableProviderEager
+        columns={columns}
+        items={args.items}
+        getRowId={(item: User) => item.id}
+      >
+        <DataTableEager.Search />
+        <DataTableEager.DataTableEager
+          expandableRow={{
+            allowMultiple: true,
+            render: (row: ReactTable.Row<User>) => <ExpandableUserDetails row={row} />,
+          }}
+        />
+      </DataTableEager.TableProviderEager>
+    );
+  },
+  decorators: [Story => <Panel><Story /></Panel>],
+};
+
+export const WithExpandableRowsControlled: Story = {
+  args: {
+    columns,
+    items: generateData({ numItems: 6 }),
+  },
+  render: (args: DataTableEagerTemplateProps) => {
+    const ExpandableStory = () => {
+      const items = args.items as Array<User>;
+      const [controlledExpandedRowIds, setControlledExpandedRowIds] = React.useState<Array<string>>([
+        items[0]?.id ?? '',
+      ].filter(Boolean));
+
+      return (
+        <DataTableEager.TableProviderEager
+          columns={columns}
+          items={items}
+          getRowId={(item: User) => item.id}
+        >
+          <DataTableEager.Search />
+          <DataTableEager.DataTableEager
+            expandableRow={{
+              allowMultiple: true,
+              expandedRowIds: controlledExpandedRowIds,
+              onExpandedRowIdsChange: setControlledExpandedRowIds,
+              render: (row: ReactTable.Row<User>) => <ExpandableUserDetails row={row} />,
+            }}
+          />
+        </DataTableEager.TableProviderEager>
+      );
+    };
+
+    return <ExpandableStory />;
+  },
+  decorators: [Story => <Panel><Story /></Panel>],
 };
 
 // const moreColumns = [
@@ -348,9 +456,9 @@ export const DataTableEagerWithPageLayout: Story = {
   decorators: [
     Story => (
       <PageLayout>
-        <PageLayout.Header title={<PageLayout.Heading>PageLayout with edgeless parameter</PageLayout.Heading>}/>
+        <PageLayout.Header title={<PageLayout.Heading>PageLayout with edgeless parameter</PageLayout.Heading>} />
         <PageLayout.Body edgeless={true}>
-          <Story/>
+          <Story />
         </PageLayout.Body>
       </PageLayout>
     ),
@@ -403,10 +511,9 @@ const DataTableEagerEdgeCasesInnerTemplate = () => {
 const ModalButton = () => {
   return (
     <DialogModal
-      title="Modal with renderMethod inline"
-      trigger={({ activate }) => <Button kind="primary" label="Open modal" onPress={activate}/>}
-      renderMethod="inline"
       size="small"
+      title="Modal"
+      trigger={({ activate }) => <Button kind="primary" label="Open modal" onPress={activate}/>}
     >
       <DataTableEagerEdgeCasesInnerTemplate />
     </DialogModal>
@@ -420,7 +527,7 @@ const DataTableEagerEdgeCasesTemplate = (
       id: 'innertable',
       accessor: (data: DataTableEagerEdgeCasesInnerTestData) => data.lorem,
       Header: 'Inner table',
-      Cell: () => <DataTableEagerEdgeCasesInnerTemplate/>,
+      Cell: () => <DataTableEagerEdgeCasesInnerTemplate />,
       disableSortBy: false,
       disableGlobalFilter: false,
       className: 'user-table__column',
@@ -429,7 +536,7 @@ const DataTableEagerEdgeCasesTemplate = (
       id: 'modalbutton',
       accessor: (data: DataTableEagerEdgeCasesInnerTestData) => data.ipsum,
       Header: 'Modal Button',
-      Cell: () => <ModalButton/>,
+      Cell: () => <ModalButton />,
       disableSortBy: false,
       disableGlobalFilter: false,
       className: 'user-table__column',
@@ -463,9 +570,183 @@ export const DataTableEagerWithPageLayoutEdgeCases: StoryObj<typeof DataTableEag
           title={<PageLayout.Heading>PageLayout with edgeless parameter - edge cases</PageLayout.Heading>}
         />
         <PageLayout.Body edgeless={true}>
-          <Story/>
+          <Story />
         </PageLayout.Body>
       </PageLayout>
     ),
   ],
+};
+
+const useTableModal = () => {
+  const modal = DialogModal.useModalRef();
+  const childTableColumns = [
+    ...columns.map(({ disableGlobalFilter, ...rest }) => rest), // remove the key disableGlobalFilter & append columns
+  ]
+  return {
+    activate() {
+      modal.current?.activate();
+    },
+    render({ onClose }: { onClose: () => void }) {
+      return (
+        <DialogModal
+          modalRef={modal}
+          title="Modal Edit"
+          size="large"
+          onClose={() => {
+            onClose?.();
+          }}
+        >
+          <Panel>
+            <DataTableEager.TableProviderEager
+              columns={childTableColumns}
+              items={generateData({ numItems: 2 })}
+              getRowId={(item: User) => item.id}
+              plugins={[DataTablePlugins.useRowSelectColumn]}
+            >
+              <DataTableEager.DataTableEager />
+            </DataTableEager.TableProviderEager>
+          </Panel>
+        </DialogModal>
+      );
+    },
+  };
+};
+
+const useTableOverlay = () => {
+  const overlay = DialogOverlay.usePopoverRef(null);
+
+  const childTableColumns = [
+    ...columns.map(({ disableGlobalFilter, ...rest }) => rest),
+  ];
+
+  return {
+    activate() {
+      overlay.current?.activate();
+    },
+
+    render({ onClose }: { onClose?: () => void }) {
+      return (
+        <DialogOverlay
+          popoverRef={overlay}
+          title="Overlay Edit"
+          display="slide-over"
+          size="medium"
+          onToggle={(event) => {
+            if (event.newState === 'closed') {
+              onClose?.();
+            }
+          }}
+        >
+          <Panel>
+            <DataTableEager.TableProviderEager
+              columns={childTableColumns}
+              items={generateData({ numItems: 2 })}
+              getRowId={(item: User) => item.id}
+              plugins={[DataTablePlugins.useRowSelectColumn]}
+            >
+              <DataTableEager.DataTableEager />
+            </DataTableEager.TableProviderEager>
+          </Panel>
+        </DialogOverlay>
+      );
+    },
+  };
+};
+
+export const DataTableEagerWithEdit: Story = {
+  render: () => {
+
+    const data = generateData({ numItems: 7 });
+    const dataTableModal = useTableModal();
+    const [highlightedRowId, setHighlightedRowId] = React.useState<string | null>(null);
+    const tableCol = [
+      ...columns,
+      {
+        id: 'actions',
+        Header: 'Actions',
+        Cell: ({ row }: ReactTable.CellProps<User>) => {
+          return (
+            <IconButton
+              icon="edit"
+              label="edit"
+              onPress={() => {
+                dataTableModal.activate();
+                setHighlightedRowId(row.id);
+              }}
+            />
+          );
+        },
+      },
+    ];
+
+    return (
+      <Panel>
+        {dataTableModal.render({
+          onClose: () => {
+            if (highlightedRowId) {
+              setHighlightedRowId(null);
+            }
+          },
+        })}
+        <DataTableEager.TableProviderEager
+          columns={tableCol}
+          items={data}
+          getRowId={(row: User) => row.id}
+          plugins={[DataTablePlugins.useRowSelectColumn]}
+        >
+          <DataTableEager.Search />
+          <DataTableEager.DataTableEager highlightedRowId={highlightedRowId ?? undefined}/>
+        </DataTableEager.TableProviderEager>
+      </Panel>
+    );
+  },
+};
+
+export const DataTableEagerWithEditOverlay: Story = {
+  render: () => {
+
+    const data = generateData({ numItems: 7 });
+    const dataTableModal = useTableOverlay();
+    const [highlightedRowId, setHighlightedRowId] = React.useState<string | null>(null);
+    const tableCol = [
+      ...columns,
+      {
+        id: 'actions',
+        Header: 'Actions',
+        Cell: ({ row }: ReactTable.CellProps<User>) => {
+          return (
+            <IconButton
+              icon="edit"
+              label="edit"
+              onPress={() => {
+                dataTableModal.activate();
+                setHighlightedRowId(row.id);
+              }}
+            />
+          );
+        },
+      },
+    ];
+
+    return (
+      <Panel>
+        {dataTableModal.render({
+          onClose: () => {
+            if (highlightedRowId) {
+              setHighlightedRowId(null);
+            }
+          },
+        })}
+        <DataTableEager.TableProviderEager
+          columns={tableCol}
+          items={data}
+          getRowId={(row: User) => row.id}
+          plugins={[DataTablePlugins.useRowSelectColumn]}
+        >
+          <DataTableEager.Search />
+          <DataTableEager.DataTableEager highlightedRowId={highlightedRowId ?? undefined}/>
+        </DataTableEager.TableProviderEager>
+      </Panel>
+    );
+  },
 };

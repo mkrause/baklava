@@ -14,7 +14,7 @@ import * as ReactTable from 'react-table';
 import { type DataTableStatus, type TableContextState, createTableContext, useTable } from './DataTableContext.tsx';
 import { Pagination } from './pagination/Pagination.tsx';
 import { DataTablePlaceholderError } from './table/DataTablePlaceholder.tsx';
-import { DataTableAsync } from './table/DataTable.tsx';
+import { DataTableAsync, type DataTableAsyncProps } from './table/DataTable.tsx';
 
 import cl from './DataTableLazy.module.scss';
 
@@ -105,6 +105,7 @@ export type TableProviderLazyProps<D extends object> = {
   children: React.ReactNode,
   columns: ReactTableOptions<D>['columns'],
   getRowId: ReactTableOptions<D>['getRowId'],
+  isRowSelectDisabled?: ReactTable.TableInstance<D>['isRowSelectDisabled'],
   plugins?: Array<ReactTable.PluginHook<D>>,
   stickyColumns?: ReactTable.TableInstance<D>['bkStickyColumns'],
   initialState: Partial<ReactTable.TableState<D>>,
@@ -123,6 +124,7 @@ export const TableProviderLazy = <D extends object>(props: TableProviderLazyProp
     columns,
     stickyColumns,
     getRowId,
+    isRowSelectDisabled,
     plugins = [],
     initialState,
     query,
@@ -148,6 +150,7 @@ export const TableProviderLazy = <D extends object>(props: TableProviderLazyProp
     data: items.itemsPage,
     ...(getRowId && { getRowId }), // Add `getRowId` only if it is defined
     ...(stickyColumns ? { bkStickyColumns: stickyColumns } : {}),
+    ...(isRowSelectDisabled ? { isRowSelectDisabled } : {}),
   };
   const table = ReactTable.useTable(
     {
@@ -248,9 +251,13 @@ export const TableProviderLazy = <D extends object>(props: TableProviderLazyProp
 TableProviderLazy.displayName = 'TableProviderLazy';
 
 
-export type DataTableLazyProps = Omit<React.ComponentProps<typeof DataTableAsync>, 'table' | 'status'>;
-export const DataTableLazy = ({ className, footer, ...propsRest }: DataTableLazyProps) => {
-  const { status, table, reload } = useTable();
+export type DataTableLazyProps<D extends object> = Omit<DataTableAsyncProps<D>, 'table' | 'status'>;
+export const DataTableLazy = <D extends object>({
+  className,
+  footer,
+  ...propsRest
+}: DataTableLazyProps<D>) => {
+  const { status, table, reload } = useTable<D>();
   
   const isEmpty = status.ready && table.rows.length === 0 && !table.canPreviousPage;
   const isLoading = status.loading;

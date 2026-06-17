@@ -11,6 +11,7 @@ import { Button } from '../../actions/Button/Button.tsx';
 import { IconButton } from '../../actions/IconButton/IconButton.tsx';
 import { H5 } from '../../../typography/Heading/Heading.tsx';
 import { TooltipProvider } from '../../overlays/Tooltip/TooltipProvider.tsx';
+import { Spinner } from '../../graphics/Spinner/Spinner.tsx';
 
 import cl from './Dialog.module.scss';
 
@@ -28,6 +29,20 @@ export const useDialogContext = () => {
   return context;
 };
 
+// Workaround for a bug in React where the event will bubble up to parent components,
+// even though native events do not bubble.
+// Ensure only handling the event from this specific dialog, ignoring bubbling events from children
+const preventBubbling = <E extends React.SyntheticEvent<HTMLDialogElement>>(
+  callback?: (event: E) => void
+) => {
+  if (!callback) return () => {}; 
+
+  return (event: E) => {
+    if (event.target === event.currentTarget) {
+      callback(event);
+    }
+  };
+};
 
 type ActionProps = React.ComponentProps<typeof Button> & {
   /** Optional tooltip text. */
@@ -103,6 +118,9 @@ export type DialogProps = Omit<ComponentProps<'dialog'>, 'title'> & {
   
   /** Container intended to display an icon on the top left corner, insetting the content and the action buttons. For larger elements, consider using DialogLayout */
   iconAside?: undefined | React.ReactNode,
+  
+  /** Controls the modal content state to show a loader when in the loading state */
+  state?: undefined | 'loading' | 'ready',
 };
 /**
  * The Dialog component displays an interaction with the user, for example a confirmation, or a form to be submitted.
@@ -118,9 +136,13 @@ export const Dialog = Object.assign(
       showCancelAction = true,
       onClose,
       onRequestClose,
+      onToggle,
+      onBeforeToggle,
+      onCancel,
       actions,
       autoFocusClose = false,
       iconAside,
+      state = 'ready',
       ...propsRest
     } = props;
     
@@ -133,15 +155,13 @@ export const Dialog = Object.assign(
     }
     
     const dialogContext = React.useMemo<DialogContext>(() => ({
-      close: onRequestClose ?? (() => { console.warn('Missing `onRequestClose` callback.'); })
+      close: onRequestClose ?? (() => { console.warn('Missing `onRequestClose` callback.'); }),
     }), [onRequestClose]);
     
-    const handleClose = React.useCallback((event: React.SyntheticEvent<HTMLDialogElement>) => {
-      // Workaround for a bug in React where the close event will bubble up to parent components, even though native
-      // close events do not bubble.
-      event.stopPropagation();
-      onClose?.(event);
-    }, [onClose]);
+    const handleClose = React.useCallback(preventBubbling(onClose), [onClose]);
+    const handleToggle = React.useCallback(preventBubbling(onToggle), [onToggle]);
+    const handleBeforeToggle = React.useCallback(preventBubbling(onBeforeToggle), [onBeforeToggle]);
+    const handleCancel = React.useCallback(preventBubbling(onCancel), [onCancel]);
     
     return (
       <DialogContext value={dialogContext}>
@@ -156,12 +176,16 @@ export const Dialog = Object.assign(
           className={cx(
             'bk',
             { [cl['bk-dialog']]: !unstyled },
+            { [cl['bk-dialog--loading']]: state === 'loading' },
             { [cl['bk-dialog--flat']]: flat },
             { [cl['bk-dialog--icon-aside']]: iconAside },
             scrollerProps.className,
             propsRest.className,
           )}
           onClose={handleClose}
+          onToggle={handleToggle}
+          onBeforeToggle={handleBeforeToggle}
+          onCancel={handleCancel}
         >
           <header className={cx(cl['bk-dialog__header'])}>
             <H5 id={`${dialogId}-title`} className={cx(cl['bk-dialog__header__title'])}>{title}</H5>
@@ -192,12 +216,18 @@ export const Dialog = Object.assign(
               // FIXME: make this focusable instead of the <dialog> as per guidelines on MDN?
               //tabIndex={0}
               className={cx(cl['bk-dialog__content__body'], 'bk-prose')}
+              inert={state === 'loading'}
             >
               {children}
             </section>
           </div>
-          
-          
+
+          {state === 'loading' && (
+            <div className={cl['bk-dialog__loader']}>
+              <Spinner size="medium"/>
+            </div>
+          )}
+
           {(showCancelAction || actions) &&
             <footer className={cx(cl['bk-dialog__actions'])}>
               {showCancelAction && <CancelAction/>}

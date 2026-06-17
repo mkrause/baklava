@@ -6,7 +6,7 @@ import { delay } from '../util/async_util.ts';
 import { sortDateTime } from '../util/sorting_util.ts';
 
 import * as React from 'react';
-import { type Column } from 'react-table';
+import type * as ReactTable from 'react-table';
 
 import type { StoryObj } from '@storybook/react-vite';
 import { generateData, type User } from '../util/generateData.ts';
@@ -15,8 +15,13 @@ import { Banner } from '../../containers/Banner/Banner.tsx';
 import { Button } from '../../actions/Button/Button.tsx';
 import { Panel } from '../../containers/Panel/Panel.tsx';
 import { PageLayout } from '../../../layouts/PageLayout/PageLayout.tsx';
+import { IconButton } from '../../actions/IconButton/IconButton.tsx';
+import { DialogOverlay } from '../../overlays/DialogOverlay/DialogOverlay.tsx';
 import * as DataTableStream from './DataTableStream.tsx';
-import { useRowSelectColumn, useRowSelectColumnRadio } from './plugins/useRowSelectColumn.tsx';
+import {
+  useRowSelectColumn,
+  useRowSelectColumnRadio,
+} from './plugins/useRowSelectColumn.tsx';
 
 
 export default {
@@ -54,8 +59,10 @@ type DataTableStreamTemplateProps = DataTableStream.TableProviderStreamProps<Use
   items: Array<User>,
   endOfStream: boolean,
   dataTableProps: React.ComponentProps<typeof DataTableStream.DataTableStream>,
+  renderTableActions?: undefined | ((ctx: { refetch: () => void }) => React.ReactNode),
 };
-const DataTableStreamTemplate = ({ dataTableProps, children, ...props }: DataTableStreamTemplateProps) => {
+
+const DataTableStreamTemplate = ({ dataTableProps, children, renderTableActions, ...props }: DataTableStreamTemplateProps) => {
   const columns = React.useMemo(() => props.columns, [props.columns]);
   const items = React.useMemo(() => props.items, [props.items]);
   const delayQuery = props.delay ?? null;
@@ -64,10 +71,10 @@ const DataTableStreamTemplate = ({ dataTableProps, children, ...props }: DataTab
 
   const query: DataTableStream.DataTableQuery<User, UserPageState | null> = React.useCallback(
     async ({ previousItem, previousPageState, limit, orderings, globalFilter }) => {
-      if (delayQuery === Number.POSITIVE_INFINITY) return new Promise(() => {}); // Infinite delay
-      if (delayQuery === -1) throw new Error('Failed'); // Simulate failure
+      if (delayQuery === Number.POSITIVE_INFINITY) { return new Promise(() => {}); } // Infinite delay
+      if (delayQuery === -1) { throw new Error('Failed'); } // Simulate failure
 
-      if (delayQuery) await delay(delayQuery);
+      if (delayQuery) { await delay(delayQuery); }
       
       let offset = 0;
 
@@ -78,10 +85,10 @@ const DataTableStreamTemplate = ({ dataTableProps, children, ...props }: DataTab
 
       const filteredItems = items
         .filter((row) => {
-          if (!globalFilter || globalFilter.trim() === '') return true;
+          if (!globalFilter || globalFilter.trim() === '') { return true; }
 
           const columnsFilterable = columns.filter((column) => !column.disableGlobalFilter);
-          if (!columnsFilterable.length) return false;
+          if (!columnsFilterable.length) { return false; }
 
           return columnsFilterable.some((column) => {
             const cell = typeof column.accessor === 'function'
@@ -91,7 +98,7 @@ const DataTableStreamTemplate = ({ dataTableProps, children, ...props }: DataTab
           });
         })
         .sort((a, b) => {
-          if (!orderings[0]) return 0;
+          if (!orderings[0]) { return 0; }
           const { column, direction } = orderings[0];
           const factor = direction === 'DESC' ? -1 : 1;
 
@@ -120,6 +127,9 @@ const DataTableStreamTemplate = ({ dataTableProps, children, ...props }: DataTab
       initialState={{ sortBy: [{ id: 'name', desc: false }] }}
     >
       {children}
+      {renderTableActions?.({
+        refetch: () => setItemsProcessed(prev => [...prev]),
+      })}
       <DataTableStream.Search />
       <DataTableStream.DataTableStream
         placeholderEmpty={
@@ -143,7 +153,7 @@ const DataTableStreamTemplate = ({ dataTableProps, children, ...props }: DataTab
 type Story = StoryObj<typeof DataTableStreamTemplate>;
 
 // Column definitions
-const columnDefinitions: Array<Column<User>> = [
+const columnDefinitions: Array<ReactTable.Column<User>> = [
   {
     id: 'name',
     accessor: (user: User) => user.name,
@@ -178,7 +188,7 @@ const columnDefinitions: Array<Column<User>> = [
   },
 ];
 
-const columnDefinitionsMultiple: Array<Column<User>> = [
+const columnDefinitionsMultiple: Array<ReactTable.Column<User>> = [
   {
     id: 'name',
     accessor: (user: User) => user.name,
@@ -485,6 +495,23 @@ export const WithScrollAndStickyNameColumnWithRadioSelection: Story = {
   decorators: [Story => <Panel><Story/></Panel>],
 };
 
+export const WithPluginIssueResolvedUsingFlagInjection: Story = {
+  args: {
+    columns: columnDefinitionsMultiple,
+    items: generateData({ numItems: 6 }),
+    stickyColumns: 'first',
+    plugins: [useRowSelectColumnRadio],
+    renderTableActions: ({ refetch }) => (
+      <Button onPress={refetch}>
+        Force Re-render
+      </Button>
+    ),
+  },
+  render: (args: DataTableStreamTemplateProps) =>
+    <ScrollWrapper><DataTableStreamTemplate {...args} /></ScrollWrapper>,
+  decorators: [Story => <Panel><Story/></Panel>],
+};
+
 export const WithScrollAndStickyNameAndActions: Story = {
   args: {
     columns: columnDefinitionsMultiple,
@@ -583,4 +610,90 @@ export const DataTableStreamWithPageLayout: Story = {
       </PageLayout>
     ),
   ],
+};
+
+const useTableOverlay = (args: DataTableStreamTemplateProps) => {
+  const overlay = DialogOverlay.usePopoverRef(null);
+
+  const childTableColumns = [
+    ...columnDefinitions.map(({ disableGlobalFilter, ...rest }) => rest),
+  ];
+
+  return {
+    activate() {
+      overlay.current?.activate();
+    },
+
+    render({ onClose }: { onClose?: () => void }) {
+      return (
+        <DialogOverlay
+          popoverRef={overlay}
+          title="Overlay Edit"
+          display="slide-over"
+          size="medium"
+          onToggle={(event) => {
+            if (event.newState === 'closed') {
+              onClose?.();
+            }
+          }}
+        >
+          <Panel>
+            <DataTableStreamTemplate
+              {...args}
+              columns={childTableColumns}
+            />
+          </Panel>
+        </DialogOverlay>
+      );
+    },
+  };
+};
+
+export const DataTableStreamWithEditOverlay: Story = {
+  args: {
+    items: generateData({ numItems: 45 }),
+  },
+  render: (args: DataTableStreamTemplateProps) => {
+    const dataTableModal = useTableOverlay({ ...args });
+    const [highlightedRowId, setHighlightedRowId] = React.useState<string | null>(null);
+
+    const tableCol = [
+      ...columnDefinitions,
+      {
+        id: 'actions',
+        Header: 'Actions',
+        Cell: ({ row }: ReactTable.CellProps<User>) => {
+          return (
+            <IconButton
+              icon="edit"
+              label="edit"
+              onPress={() => {
+                dataTableModal.activate();
+                setHighlightedRowId(row.id);
+              }}
+            />
+          );
+        },
+      },
+    ];
+
+    return (
+      <Panel>
+        {dataTableModal.render({
+          onClose: () => {
+            if (highlightedRowId) {
+              setHighlightedRowId(null);
+            }
+          },
+        })}
+        <DataTableStreamTemplate
+          {...args}
+          columns={tableCol}
+          dataTableProps={{
+            ...(highlightedRowId && { highlightedRowId })
+          }}
+        />
+      </Panel>
+    );
+  },
 };

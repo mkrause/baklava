@@ -13,7 +13,7 @@ import { type DataTableStatus, type TableContextState, createTableContext, useTa
 import { PaginationStream } from './pagination/PaginationStream.tsx';
 import { DataTablePlaceholderError } from './table/DataTablePlaceholder.tsx';
 
-import { DataTableAsync } from './table/DataTable.tsx';
+import { DataTableAsync, type DataTableAsyncProps } from './table/DataTable.tsx';
 
 import type { FilterQuery } from '../MultiSearch/filterQuery.ts';
 
@@ -121,6 +121,7 @@ export type TableProviderStreamProps<D extends object, P = undefined> = {
   children: React.ReactNode,
   columns: ReactTableOptions<D>['columns'],
   getRowId: ReactTableOptions<D>['getRowId'],
+  isRowSelectDisabled?: ReactTable.TableInstance<D>['isRowSelectDisabled'],
   plugins?: Array<ReactTable.PluginHook<D>>,
   stickyColumns?: ReactTable.TableInstance<D>['bkStickyColumns'],
   initialState: Partial<ReactTable.TableState<D>>,
@@ -141,6 +142,7 @@ export const TableProviderStream = <D extends object, P = undefined>(
     columns,
     stickyColumns,
     getRowId,
+    isRowSelectDisabled,
     plugins = [],
     initialState,
     query,
@@ -170,6 +172,7 @@ export const TableProviderStream = <D extends object, P = undefined>(
     data: items,
     ...(getRowId && { getRowId }), // Add `getRowId` only if it is defined
     ...(stickyColumns ? { bkStickyColumns: stickyColumns } : {}),
+    ...(isRowSelectDisabled ? { isRowSelectDisabled } : {}),
   };
 
   const table = ReactTable.useTable<D>(
@@ -471,14 +474,14 @@ export const TableProviderStream = <D extends object, P = undefined>(
 };
 TableProviderStream.displayName = 'TableProviderStream';
 
-type DataTableStreamProps = Omit<React.ComponentProps<typeof DataTableAsync>, 'table' | 'status'>;
-export const DataTableStream = ({
+type DataTableStreamProps<D extends object> = Omit<DataTableAsyncProps<D>, 'table' | 'status'>;
+export const DataTableStream = <D extends object>({
   className,
   footer,
   placeholderEndOfTable,
   ...propsRest
-}: DataTableStreamProps) => {
-  const { status, table, reload } = useTable();
+}: DataTableStreamProps<D>) => {
+  const { status, table, reload } = useTable<D>();
   
   const isLoading = status.loading;
   const isEmpty = status.ready && table.rows.length === 0;

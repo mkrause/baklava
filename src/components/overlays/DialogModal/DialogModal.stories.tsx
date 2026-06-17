@@ -5,15 +5,16 @@
 import * as React from 'react';
 
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { colorBright } from '../../../util/storybook/StorybookUtils.tsx';
 import { LoremIpsum } from '../../../util/storybook/LoremIpsum.tsx';
 
 import { notify } from '../ToastProvider/ToastProvider.tsx';
+import { Icon } from '../../graphics/Icon/Icon.tsx';
 import { Button } from '../../actions/Button/Button.tsx';
-import { AccountSelector } from '../../../layouts/AppLayout/Header/AccountSelector.tsx';
 import { TooltipProvider } from '../Tooltip/TooltipProvider.tsx';
+import { AccountSelector } from '../../../layouts/AppLayout/Header/AccountSelector.tsx';
 
 import { DialogModal } from './DialogModal.tsx';
-import { Icon } from '../../graphics/Icon/Icon.tsx';
 
 
 type DialogModalArgs = React.ComponentProps<typeof DialogModal>;
@@ -51,6 +52,14 @@ export const DialogModalSmall: Story = {
   args: { size: 'small' },
 };
 
+export const DialogModalSmallWithEmptyLoadingState: Story = {
+  args: {
+    size: 'small',
+    state: 'loading',
+    children: null,
+  },
+};
+
 export const DialogModalLarge: Story = {
   args: { size: 'large' },
 };
@@ -59,6 +68,62 @@ export const DialogModalFullScreen: Story = {
   args: {
     display: 'full-screen',
     title: 'Full screen modal dialog',
+  },
+};
+
+const LoadingStateToggleContent = () => {
+  const [state, setState] = React.useState<'ready' | 'loading'>('ready');
+
+  const handleTriggerLoading = () => {
+    setState('loading');
+    setTimeout(() => setState('ready'), 5000);
+  };
+
+  return (
+    <DialogModal
+      display="full-screen"
+      title="Full screen modal dialog"
+      state={state}
+      trigger={({ activate }) => <Button kind="primary" label="Open modal" onPress={activate} />}
+    >
+      <LoremIpsum paragraphs={2} />
+      <div
+        style={{
+          position: 'sticky',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          display: 'flex',
+          justifyContent: 'center',
+        }}
+      >
+        <Button
+          kind="primary"
+          label={state === 'loading' ? 'Loading...' : 'Trigger loading state'}
+          disabled={state === 'loading'}
+          onPress={handleTriggerLoading}
+        />
+      </div>
+      <LoremIpsum paragraphs={15} />
+    </DialogModal>
+  );
+};
+
+export const DialogModalFullScreenWithLoadingStateToggle: Story = {
+  render: () => (
+    <>
+      <LoremIpsum paragraphs={2}/>
+      <LoadingStateToggleContent/>
+      <LoremIpsum paragraphs={2}/>
+    </>
+  ),
+};
+
+export const DialogModalFullScreenWithEmptyLoadingState: Story = {
+  args: {
+    display: 'full-screen',
+    title: 'Full screen modal dialog',
+    state: 'loading',
+    children: null,
   },
 };
 
@@ -76,6 +141,36 @@ export const DialogModalSlideOverLeft: Story = {
     size: 'medium',
     slideOverPosition: 'left',
     title: 'Slide over modal dialog',
+  },
+};
+
+export const DialogModalWithOnClose: Story = {
+  args: {
+    title: 'Modal with a close handler',
+    onClose: () => { notify.info('The DialogModal was closed'); },
+  },
+};
+
+export const DialogModalIsolation: Story = {
+  decorators: [Story => <div style={{ color: colorBright, cursor: 'not-allowed', textAlign: 'center' }}><Story/></div>],
+  args: {
+    title: 'Modal with a submodal',
+    className: 'outer',
+    children: (
+      <>
+        <p>This text should not be red.</p>
+        <p>The cursor should be the default.</p>
+        <p>The text should not be center aligned.</p>
+        
+        <DialogModal
+          className="inner"
+          title="Submodal"
+          trigger={({ activate }) => <Button kind="primary" label="Open submodal" onPress={activate}/>}
+        >
+          This is a submodal.
+        </DialogModal>
+      </>
+    ),
   },
 };
 

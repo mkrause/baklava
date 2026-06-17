@@ -3,10 +3,10 @@
 
 import * as path from 'node:path';
 //import * as url from 'node:url';
-//import { glob } from 'glob';
+//import { glob } from 'tinyglobby';
 
 import browserslist from 'browserslist';
-import { defineConfig } from 'vite';
+import { defineConfig, esmExternalRequirePlugin } from 'vite';
 import { Features as LightningCssFeatures, browserslistToTargets } from 'lightningcss';
 
 // Vite plugins
@@ -66,11 +66,7 @@ export default defineConfig({
   css: {
     // Configure preprocessing using Sass
     preprocessorOptions: {
-      scss: {
-        // Cannot yet use the modern `if()` syntax, until VSCode supports it:
-        // https://github.com/microsoft/vscode-css-languageservice/issues/466
-        silenceDeprecations: ['if-function'],
-      },
+      scss: {},
     },
     // Configure postprocessing using lightningcss
     transformer: 'lightningcss',
@@ -108,10 +104,14 @@ export default defineConfig({
       //cssFileName: 'baklava',
       formats: ['es'],
     },
-    rollupOptions: {
+    rolldownOptions: {
       // Do not include React in the output (rely on the consumer to bring their own version)
-      external: ['react', 'react/jsx-runtime', 'react-router-dom'],
-      
+      // external: ['react', 'react/jsx-runtime'],
+      plugins: [
+        esmExternalRequirePlugin({
+          external: ['react', 'react/jsx-runtime', 'react-router-dom'],
+        }),
+      ],
       // input: Object.fromEntries(
       //   glob.sync('src/**/*.{ts,tsx}', {
       //     ignore: ['src/**/*.d.ts'],

@@ -32,6 +32,7 @@ const preview = {
           ],
           'typography',
           [
+            'Global',
             'Heading',
             'Prose',
           ],
@@ -81,7 +82,9 @@ const preview = {
             ],
             'lists',
             [
+              'Property',
               'PropertyList',
+              'PropertyGrid',
             ],
             'forms',
             [
@@ -94,6 +97,7 @@ const preview = {
               [
                 'Label',
                 'FieldSet',
+                'FileInfo',
               ],
               'controls',
               [
@@ -105,6 +109,7 @@ const preview = {
                 'Switch',
                 'Radio',
                 'RadioGroup',
+                'RadioGroupAsCards',
                 'SegmentedControl',
                 'Input',
                 [
@@ -112,15 +117,17 @@ const preview = {
                   'InputSensitive',
                   'InputPassword',
                 ],
+                'InputFile',
                 'TextArea',
+                'TextAreaWithFileUpload',
                 'ListBox',
                 'ListBoxLazy',
                 'ListBoxMulti',
                 'ListBoxMultiLazy',
-                'ComboBox',
-                'ComboBoxLazy',
-                'ComboBoxMulti',
-                'ComboBoxMultiLazy',
+                'SelectComboBox',
+                'SelectComboBoxLazy',
+                'SelectComboBoxMulti',
+                'SelectComboBoxMultiLazy',
                 'Select',
                 'SelectMulti',
                 'datetime',
@@ -140,6 +147,7 @@ const preview = {
                 'InputField',
                 'InputFieldWithTags',
                 'TextAreaField',
+                'TextAreaWithFileUploadField',
               ],
             ],
             'navigations',

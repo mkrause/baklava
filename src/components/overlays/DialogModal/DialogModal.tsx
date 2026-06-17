@@ -6,7 +6,7 @@ import type { NonUndefined } from '../../../util/types.ts';
 
 import * as React from 'react';
 import { flushSync } from 'react-dom';
-import { mergeCallbacks, mergeRefs } from '../../../util/reactUtil.ts';
+import { mergeCallbacks, mergeProps, mergeRefs } from '../../../util/reactUtil.ts';
 import { classNames as cx } from '../../../util/componentUtil.ts';
 
 import { Dialog } from '../../containers/Dialog/Dialog.tsx';
@@ -17,7 +17,7 @@ import cl from './DialogModal.module.scss';
 
 export { cl as DialogModalClassNames };
 
-export type DialogModalProps = Omit<React.ComponentProps<typeof Dialog>, 'children'> & {
+export type DialogModalProps = Omit<React.ComponentProps<typeof Dialog>, 'children' | 'onRequestClose'> & {
   /** Content of the modal. If a function, will be passed a dialog controller. */
   children?: React.ReactNode | ModalProviderProps['dialog'],
   
@@ -51,7 +51,7 @@ export type DialogModalProps = Omit<React.ComponentProps<typeof Dialog>, 'childr
   /** Any additional props to pass to the modal provider. */
   providerProps?: undefined | Omit<ModalProviderProps, 'children'>,
   
-  /** Whether to render the model inline or with in a portal */
+  /** Whether to render the model inline in the DOM, or in a portal on the `<body>`. Default: `inline`. */
   renderMethod?: undefined | ModalProviderProps['renderMethod'],
 };
 
@@ -174,6 +174,7 @@ export const DialogModal = Object.assign(
   (props: DialogModalProps) => {
     const {
       children,
+      title,
       unstyled = false,
       activeDefault = false,
       display = 'center',
@@ -183,9 +184,12 @@ export const DialogModal = Object.assign(
       allowUserClose = true,
       modalRef,
       providerProps,
-      renderMethod = 'portal',
+      renderMethod = 'inline',
       ...propsRest
     } = props;
+    
+    // Need to omit `title` from the merged props since it's incompatible between `HTMLDialogElement` and `DialogModal`
+    type DialogPropsMerged = Array<Omit<React.ComponentProps<typeof Dialog>, 'title'>>;
     
     return (
       <ModalProvider
@@ -196,13 +200,13 @@ export const DialogModal = Object.assign(
         dialog={dialogController =>
           <Dialog
             aria-modal="true"
+            title={title}
             flat={['slide-over'].includes(display)}
-            {...dialogController.dialogProps}
             showCloseIcon={allowUserClose}
             autoFocusClose={allowUserClose}
             showCancelAction={allowUserClose}
+            {...mergeProps<DialogPropsMerged>(dialogController.dialogProps, propsRest)}
             onRequestClose={dialogController.close}
-            {...propsRest}
             className={cx(
               'bk',
               { [cl['bk-dialog-modal']]: !unstyled },
@@ -214,6 +218,7 @@ export const DialogModal = Object.assign(
               { [cl['bk-dialog-modal--small']]: size === 'small' },
               { [cl['bk-dialog-modal--medium']]: size === 'medium' },
               { [cl['bk-dialog-modal--large']]: size === 'large' },
+              { [cl['bk-dialog-modal--loading']]: propsRest.state === 'loading' },
               dialogController.dialogProps.className,
               propsRest.className,
             )}

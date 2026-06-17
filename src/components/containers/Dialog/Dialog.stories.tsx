@@ -7,6 +7,8 @@ import * as React from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { LayoutDecorator } from '../../../util/storybook/LayoutDecorator.tsx';
 import { loremIpsum, LoremIpsum, loremIpsumSentence } from '../../../util/storybook/LoremIpsum.tsx';
+
+import { notify } from '../../overlays/ToastProvider/ToastProvider.tsx';
 import { Form } from '../../forms/context/Form/Form.tsx';
 import { FormLayout } from '../../../layouts/FormLayout/FormLayout.tsx';
 import { RadioGroup } from '../../forms/controls/RadioGroup/RadioGroup.tsx';
@@ -15,6 +17,7 @@ import { InputField } from '../../forms/fields/InputField/InputField.tsx';
 import { Icon } from '../../graphics/Icon/Icon.tsx';
 
 import { Dialog } from './Dialog.tsx';
+import { Button } from '../../actions/Button/Button.tsx';
 
 
 type DialogArgs = React.ComponentProps<typeof Dialog>;
@@ -40,6 +43,58 @@ export default {
 
 export const DialogStandard: Story = {};
 
+export const DialogLoading: Story = {
+  args: {
+    state: 'loading',
+  },
+};
+
+export const DialogLoadingEmpty: Story = {
+  args: {
+    state: 'loading',
+    children: undefined,
+  },
+};
+
+export const DialogWithLoadingTrigger: Story = {
+  args: {
+    state: 'ready',
+  },
+  render: (args) => {
+    const [state, setState] = React.useState<'ready' | 'loading'>('ready');
+    
+    const handleTriggerLoading = () => {
+      setState('loading');
+      setTimeout(() => { setState('ready'); }, 5000);
+    };
+    
+    return (
+      <Dialog
+        {...args}
+        state={state}
+      >
+        <div
+          style={{
+            position: 'sticky',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
+          <Button
+            kind="primary"
+            label={state === 'loading' ? 'Loading...' : 'Trigger loading state'}
+            disabled={state === 'loading'}
+            onPress={handleTriggerLoading}
+          />
+        </div>
+        <LoremIpsum paragraphs={15}/>
+      </Dialog>
+    );
+  },
+};
+
 export const DialogWithoutClose: Story = {
   args: {
     showCloseIcon: false,
@@ -61,6 +116,24 @@ export const DialogWithTitleOverflow: Story = {
 export const DialogFlat: Story = {
   args: {
     flat: true,
+  },
+};
+
+/**
+ * When the user clicks on either the "Close" or "Submit" action, or the "X" close button, the `onRequestClose`
+ * callback should get triggered. The "Test" action here should not trigger `onRequestClose`.
+ */
+export const DialogWithOnRequestClose: Story = {
+  args: {
+    onRequestClose: () => { notify.info('User requested close'); },
+    showCancelAction: false,
+    actions: (
+      <>
+        <Dialog.CancelAction/>
+        <Dialog.SubmitAction/>
+        <Dialog.Action label="Test"/>
+      </>
+    ),
   },
 };
 

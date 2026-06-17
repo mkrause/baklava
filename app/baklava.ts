@@ -37,6 +37,7 @@ export { SubmitButton } from '../src/components/forms/context/SubmitButton/Submi
 // Forms > Common
 export { Label } from '../src/components/forms/common/Label/Label.tsx';
 export { FieldSet } from '../src/components/forms/common/FieldSet/FieldSet.tsx';
+export { FileInfo } from '../src/components/forms/common/FileInfo/FileInfo.tsx';
 
 // Forms > Controls
 export { Checkbox } from '../src/components/forms/controls/Checkbox/Checkbox.tsx';
@@ -46,11 +47,18 @@ export { Switch } from '../src/components/forms/controls/Switch/Switch.tsx';
 export { Radio } from '../src/components/forms/controls/Radio/Radio.tsx';
 export { RadioGroup } from '../src/components/forms/controls/RadioGroup/RadioGroup.tsx';
 export { SegmentedControl } from '../src/components/forms/controls/SegmentedControl/SegmentedControl.tsx';
+export { 
+  RadioGroupAsCards 
+} from '../src/components/forms/controls/RadioGroupAsCards/RadioGroupAsCards.tsx';
 export { Input } from '../src/components/forms/controls/Input/Input.tsx';
 export { InputSearch } from '../src/components/forms/controls/Input/InputSearch.tsx';
 export { InputSensitive } from '../src/components/forms/controls/Input/InputSensitive.tsx';
 export { InputPassword } from '../src/components/forms/controls/Input/InputPassword.tsx';
+export { InputFile } from '../src/components/forms/controls/InputFile/InputFile.tsx';
 export { TextArea } from '../src/components/forms/controls/TextArea/TextArea.tsx';
+export {
+  TextAreaWithFileUpload
+} from '../src/components/forms/controls/TextAreaWithFileUpload/TextAreaWithFileUpload.tsx';
 export { DatePicker } from '../src/components/forms/controls/datetime/DatePicker/DatePicker.tsx';
 export {
   type DateRange,
@@ -63,10 +71,10 @@ export { ListBox } from '../src/components/forms/controls/ListBox/ListBox.tsx';
 export { ListBoxLazy } from '../src/components/forms/controls/ListBoxLazy/ListBoxLazy.tsx';
 export { ListBoxMulti } from '../src/components/forms/controls/ListBoxMulti/ListBoxMulti.tsx';
 export { ListBoxMultiLazy } from '../src/components/forms/controls/ListBoxMultiLazy/ListBoxMultiLazy.tsx';
-export { ComboBox } from '../src/components/forms/controls/ComboBox/ComboBox.tsx';
-export { ComboBoxLazy } from '../src/components/forms/controls/ComboBoxLazy/ComboBoxLazy.tsx';
-export { ComboBoxMulti } from '../src/components/forms/controls/ComboBoxMulti/ComboBoxMulti.tsx';
-export { ComboBoxMultiLazy } from '../src/components/forms/controls/ComboBoxMultiLazy/ComboBoxMultiLazy.tsx';
+export { SelectComboBox } from '../src/components/forms/controls/SelectComboBox/SelectComboBox.tsx';
+export { SelectComboBoxLazy } from '../src/components/forms/controls/SelectComboBoxLazy/SelectComboBoxLazy.tsx';
+export { SelectComboBoxMulti } from '../src/components/forms/controls/SelectComboBoxMulti/SelectComboBoxMulti.tsx';
+export { SelectComboBoxMultiLazy } from '../src/components/forms/controls/SelectComboBoxMultiLazy/SelectComboBoxMultiLazy.tsx';
 export { Select } from '../src/components/forms/controls/Select/Select.tsx';
 export { SelectMulti } from '../src/components/forms/controls/SelectMulti/SelectMulti.tsx';
 
@@ -76,7 +84,9 @@ export { InputField } from '../src/components/forms/fields/InputField/InputField
 export { InputFieldWithTags } from '../src/components/forms/fields/InputFieldWithTags/InputFieldWithTags.tsx';
 export { RadioGroupField } from '../src/components/forms/fields/RadioGroupField/RadioGroupField.tsx';
 export { TextAreaField } from '../src/components/forms/fields/TextAreaField/TextAreaField.tsx';
-
+export {
+  TextAreaWithFileUploadField,
+} from '../src/components/forms/fields/TextAreaWithFileUploadField/TextAreaWithFileUploadField.tsx';
 // Graphics
 export { Icon } from '../src/components/graphics/Icon/Icon.tsx';
 export { PlaceholderEmpty } from '../src/components/graphics/PlaceholderEmpty/PlaceholderEmpty.tsx';
@@ -88,7 +98,9 @@ export { TextLine } from '../src/components/text/TextLine/TextLine.tsx';
 export { Tag } from '../src/components/text/Tag/Tag.tsx';
 
 // Lists
+export { Property } from '../src/components/lists/Property/Property.tsx';
 export { PropertyList } from '../src/components/lists/PropertyList/PropertyList.tsx';
+export { PropertyGrid } from '../src/components/lists/PropertyGrid/PropertyGrid.tsx';
 
 // Navigations
 export { Stepper } from '../src/components/navigations/Stepper/Stepper.tsx';
@@ -112,7 +124,7 @@ export { TooltipProvider } from '../src/components/overlays/Tooltip/TooltipProvi
 export { useCustomFilters } from '../src/components/tables/DataTable/plugins/useCustomFilters.tsx';
 export {
   useRowSelectColumn,
-  useRowSelectColumnRadio
+  useRowSelectColumnRadio,
 } from '../src/components/tables/DataTable/plugins/useRowSelectColumn.tsx';
 export * as DataTableContext from '../src/components/tables/DataTable/DataTableContext.tsx';
 export * as DataTablePlaceholder from '../src/components/tables/DataTable/table/DataTablePlaceholder.tsx';

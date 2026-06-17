@@ -4,13 +4,13 @@
 
 @use '../../../../styling/defs.scss' as bk;
 
-
 @layer baklava.components {
   .bk-data-table {
     @include bk.component-base(bk-data-table);
     overflow: visible;
     
     --bk-datatable-background: #{bk.$theme-card-background-default};
+    --bk-datatable-expandable-row-transition-duration: 220ms;
     
     inline-size: 100%;
     
@@ -161,9 +161,8 @@
               transition: transform 240ms ease-in-out,
               opacity 120ms ease-in-out;
               
-              &.asc {
-                transform: rotateX(180deg); // Rotate along the X-axis (i.e. it flips up-down)
-              }
+              &.asc { transform: rotateX(180deg); } // Rotate along the X-axis (i.e. it flips up-down)
+              &.desc { --keep: ; }
             }
             
             &:hover {
@@ -183,6 +182,74 @@
           &.selected {
             background-color: bk.$theme-table-background-hover;
           }
+        }
+        
+        tr.bk-data-table__row--highlighted{
+          background-color: bk.$theme-table-background-hover;
+        }
+
+        tr.bk-data-table__row--expandable-open {
+          border-block-end: none;
+        }
+
+        tr.bk-data-table__expandable-row {
+          background-color: var(--bk-datatable-background);
+
+          &:hover {
+            background-color: var(--bk-datatable-background);
+          }
+
+          > td {
+            padding-block-start: 0;
+            padding-block-end: 0;
+            overflow: visible;
+          }
+
+          .bk-data-table__expandable-row-content {
+            block-size: 0;
+            opacity: 0;
+            overflow: hidden;
+
+            @media (prefers-reduced-motion: no-preference) {
+              transition-property: block-size, opacity;
+              transition-duration:
+                var(--bk-datatable-expandable-row-transition-duration),
+                160ms;
+              transition-timing-function: ease, ease;
+            }
+
+            &.bk-data-table__expandable-row-content--open {
+              opacity: 1;
+            }
+          }
+
+          .bk-data-table__expandable-row-content-inner {
+            padding-block-end: bk.$spacing-4;
+            padding-inline-start: calc(bk.$spacing-9 + bk.$spacing-1);
+          }
+        }
+
+        .bk-data-table__expandable-row-toggle-icon {
+          flex: none;
+          align-self: flex-start;
+          inline-size: bk.$spacing-4;
+          block-size: bk.$spacing-4;
+        }
+
+        .bk-data-table__expandable-row-toggle {
+          flex: none;
+          align-self: stretch;
+          display: flex;
+          align-items: flex-start;
+          justify-content: center;
+          margin-block: calc(-1 * bk.$spacing-3);
+          margin-inline-start: calc(-1 * (bk.$spacing-2 + var(--bk-panel-inset-compensation)));
+          padding: bk.$spacing-4 bk.$spacing-3;
+        }
+
+        .bk-data-table__text-cell--expandable-toggle {
+          column-gap: bk.$spacing-3;
+          overflow: visible;
         }
       }
       

@@ -6,7 +6,7 @@ import * as React from 'react';
 
 // Utils
 import { classNames as cx, type ComponentProps } from '../../../util/componentUtil.ts';
-import { mergeCallbacks, mergeRefs, useRefWithInitializer } from '../../../util/reactUtil.ts';
+import { mergeCallbacks, mergeProps, mergeRefs, useRefWithInitializer } from '../../../util/reactUtil.ts';
 import {
   type UseFloatingElementOptions,
   UseFloatingElementResult,
@@ -69,7 +69,7 @@ export const useFloatingMenu = (options: useFloatingMenuOptions) => {
     onOpenChange,
   } = options;
 
-  return useFloatingElement({
+  const useFloatingElementResult = useFloatingElement({
     role,
     triggerAction: triggerAction ?? action ?? 'click',
     keyboardInteractions,
@@ -83,6 +83,14 @@ export const useFloatingMenu = (options: useFloatingMenuOptions) => {
         ? { open, ...(onOpenChange ? { onOpenChange } : {}) }
         : undefined,
   });
+
+  return {
+    ...useFloatingElementResult,
+    // Use `useFloatingElementResult.isOpen` to update the internal state only when `open` is uncontrolled.
+    // Otherwise, popover open state is fully managed by the parent.
+    isOpen: open ?? useFloatingElementResult.isOpen,
+    setIsOpen: onOpenChange ?? useFloatingElementResult.setIsOpen,
+  };
 };
 
 /**
@@ -206,6 +214,8 @@ export const useMenuAnchor = <RenderArgs extends BaseAnchorRenderArgs>(props: Us
         'aria-expanded': isOpen,
         // biome-ignore lint/suspicious/noExplicitAny: `onKeyDown` should be a function here
         onKeyDown: mergeCallbacks([props.onKeyDown as any, onKeyDown]),
+        // biome-ignore lint/suspicious/noExplicitAny: `onBlur` should be a function here
+        onBlur: mergeCallbacks([userProps?.onBlur, props.onBlur as any]),
       };
     };
 
@@ -368,6 +378,12 @@ export const useMenuSelect = (options: UseMenuSelectHandlerOptions) => {
 
       if (previous) {
         previous.focus({ focusVisible: false });
+
+        if (previous instanceof HTMLInputElement) {
+          // Move cursor to end
+          const length = previous.value.length;
+          previous.setSelectionRange(length, length);
+        }
       }
 
       if (triggerAction !== 'focus') {
@@ -597,10 +613,16 @@ export const MenuMultiProvider = Object.assign((props: MenuMultiProviderProps) =
   const floatingProps = getFloatingProps({
     popover: 'manual',
     style: floatingStyles,
-    ...propsRest,
-    className: cx(cl['bk-menu-provider__list-box'], propsRest.className),
-    onKeyDown: mergeCallbacks([propsRest.onKeyDown, onMenuKeyDown]),
+    className: cx(cl['bk-menu-provider__list-box']),
   });
+
+  const mergedProps = mergeProps(
+    floatingProps,
+    propsRest,
+    {
+      onKeyDown: mergeCallbacks([propsRest.onKeyDown, onMenuKeyDown]),
+    },
+  );
 
   const mergedListBoxRef = mergeRefs<React.ComponentRef<typeof ListBoxMulti.ListBoxMulti>>(
     listBoxRef,
@@ -626,8 +648,7 @@ export const MenuMultiProvider = Object.assign((props: MenuMultiProviderProps) =
       {anchor}
       {isMounted && (
         <ListBoxMulti.ListBoxMulti
-          {...floatingProps}
-          {...propsRest}
+          {...mergedProps}
           ref={mergedListBoxRef}
           size={menuSize}
           label={label}
