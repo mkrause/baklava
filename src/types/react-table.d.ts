@@ -176,4 +176,9 @@ declare module 'react-table' {
       UseRowSelectRowProps<D>,
       UseRowStateRowProps<D>,
       CustomRowSelectProps {}
+
+  // LEGACY
+  export interface TableHeaderProps {
+    onClick: (event: React.MouseEvent) => void,
+  }
 }
