@@ -221,6 +221,7 @@ export default (plop: NodePlopAPI) => {
     }
   });
   
+  // Generate all the necessary files for a new component
   plop.setGenerator('component', {
     description: 'Generate a Baklava component',
     prompts: [

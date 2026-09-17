@@ -62,5 +62,8 @@
     "**/*.test.tsx",
     "**/*.spec.ts",
     "**/*.spec.tsx",
+    // To exclude legacy files:
+    //"app/legacy.ts",
+    //"src/legacy",
   ],
 }
