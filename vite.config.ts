@@ -49,18 +49,31 @@ export default defineConfig({
     }),
     
     //libInjectCss(), // Disabled for now (`.css` import causes issues in vitest)
-
+    
     // Generate `.d.ts` files
     dts({
       // https://github.com/qmhc/vite-plugin-dts/issues/275#issuecomment-1963123685
-      outDir: 'dist', // dts.root + 'dist' => where we need to rollup.
+      outDirs: 'dist', // dts.root + 'dist' => where we need to rollup.
       root: '../', //vite.root + ../ = ./ = (dts.root)
       staticImport: true,
       insertTypesEntry: true,
       //rollupTypes: true, // Issue: https://github.com/qmhc/vite-plugin-dts/issues/399
-
+      
       //include: [path.resolve(__dirname, 'app')],
       tsconfigPath: path.resolve(__dirname, 'tsconfig.app.json'),
+      
+      // `vite-plugin-dts` by default does not fail the build when there are errors
+      afterDiagnostic(diagnostics) {
+        // Categories: Warning = 0, Error = 1, Suggestion = 2, Message = 3
+        // LEGACY: `src/legacy` has known type errors, do not fail the build on those
+        const errorDiagnostics = diagnostics.filter(({ category, file }) =>
+          (category === 0 || category === 1) && !file.fileName.includes('/src/legacy')
+        );
+
+        if (errorDiagnostics.length > 0) {
+          throw new Error(`vite-plugin-dts reported ${errorDiagnostics.length} type error(s), failing the build.`)
+        }
+      },
     }),
   ],
   css: {

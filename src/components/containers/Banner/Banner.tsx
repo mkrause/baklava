@@ -2,8 +2,6 @@
 |* This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of
 |* the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { assertUnreachable } from '../../../util/types.ts';
-
 import * as React from 'react';
 import { classNames as cx, type ComponentProps } from '../../../util/componentUtil.ts';
 
@@ -30,7 +28,7 @@ const BannerVariantIcon = ({ variant, ...propsRest }: BannerVariantIconProps) =>
       case 'warning': return 'warning-filled';
       case 'error': return 'status-failed-filled';
       case 'success': return 'status-success-filled';
-      default: return assertUnreachable(variant);
+      default: throw new Error(`Unexpected banner variant '${variant satisfies never}'`);
     }
   })();
   return <Icon icon={icon} {...propsRest}/>;
@@ -83,6 +81,9 @@ export type BannerProps = Omit<ComponentProps<'div'>, 'title'> & {
   /** Whether to attempt to display the banner as a single line. */
   compact?: undefined | boolean,
   
+  /** Whether to display square borders. */
+  flat?: undefined | boolean,
+  
   /** Which variant to display, which changes the color and left icon. Defaults to "info". */
   variant?: undefined | BannerVariant,
   
@@ -107,6 +108,7 @@ export const Banner = Object.assign(
       unstyled = false,
       trimmed = false,
       compact = true,
+      flat = false,
       variant = 'info',
       title = '',
       showCloseAction = false,
@@ -128,7 +130,7 @@ export const Banner = Object.assign(
         case 'warning': return 'Warning';
         case 'error': return 'Error';
         case 'success': return 'Success';
-        default: return assertUnreachable(variant);
+        default: throw new Error(`Unexpected banner variant '${variant satisfies never}'`);
       }
     };
     
@@ -142,6 +144,7 @@ export const Banner = Object.assign(
           'bk',
           { [cl['bk-banner']]: !unstyled },
           { [cl['bk-banner--trimmed']]: trimmed },
+          { [cl['bk-banner--flat']]: flat },
           { [cl[`bk-banner--${variant}`]]: variant },
           propsRest.className,
         )}

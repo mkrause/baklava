@@ -179,6 +179,6 @@ declare module 'react-table' {
 
   // LEGACY
   export interface TableHeaderProps {
-    onClick: (event: React.MouseEvent) => void,
+    onClick?: undefined | ((event: React.MouseEvent) => void),
   }
 }
