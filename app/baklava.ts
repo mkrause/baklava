@@ -20,6 +20,8 @@ export { ButtonAsLink } from '../src/components/actions/ButtonAsLink/ButtonAsLin
 export { Link } from '../src/components/actions/Link/Link.tsx';
 export { LinkAsButton } from '../src/components/actions/LinkAsButton/LinkAsButton.tsx';
 export { IconButton } from '../src/components/actions/IconButton/IconButton.tsx';
+export { ToggleButton } from '../src/components/actions/ToggleButton/ToggleButton.tsx';
+export { SegmentedControl } from '../src/components/actions/SegmentedControl/SegmentedControl.tsx';
 export { CardAction } from '../src/components/actions/CardAction/CardAction.tsx';
 
 // Containers
@@ -46,7 +48,6 @@ export { CheckboxGroup } from '../src/components/forms/controls/CheckboxGroup/Ch
 export { Switch } from '../src/components/forms/controls/Switch/Switch.tsx';
 export { Radio } from '../src/components/forms/controls/Radio/Radio.tsx';
 export { RadioGroup } from '../src/components/forms/controls/RadioGroup/RadioGroup.tsx';
-export { SegmentedControl } from '../src/components/forms/controls/SegmentedControl/SegmentedControl.tsx';
 export { 
   RadioGroupAsCards 
 } from '../src/components/forms/controls/RadioGroupAsCards/RadioGroupAsCards.tsx';
@@ -79,6 +80,7 @@ export { Select } from '../src/components/forms/controls/Select/Select.tsx';
 export { SelectMulti } from '../src/components/forms/controls/SelectMulti/SelectMulti.tsx';
 
 // Forms > Fields
+export { FieldLayout } from '../src/components/forms/fields/FieldLayout/FieldLayout.tsx';
 export { CheckboxField } from '../src/components/forms/fields/CheckboxField/CheckboxField.tsx';
 export { InputField } from '../src/components/forms/fields/InputField/InputField.tsx';
 export { InputFieldWithTags } from '../src/components/forms/fields/InputFieldWithTags/InputFieldWithTags.tsx';
@@ -87,7 +89,9 @@ export { TextAreaField } from '../src/components/forms/fields/TextAreaField/Text
 export {
   TextAreaWithFileUploadField,
 } from '../src/components/forms/fields/TextAreaWithFileUploadField/TextAreaWithFileUploadField.tsx';
+
 // Graphics
+export { Dot } from '../src/components/graphics/Dot/Dot.tsx';
 export { Icon } from '../src/components/graphics/Icon/Icon.tsx';
 export { PlaceholderEmpty } from '../src/components/graphics/PlaceholderEmpty/PlaceholderEmpty.tsx';
 export { ProgressBar } from '../src/components/graphics/ProgressBar/ProgressBar.tsx';
